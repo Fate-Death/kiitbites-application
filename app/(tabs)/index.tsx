@@ -1,74 +1,93 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation } from '@react-navigation/native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const HomePage = () => {
+    const navigation = useNavigation();
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Hello!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
+    return (
+        <View style={styles.container}>
+            {/* Welcome Message */}
+            <Text style={styles.title}>Welcome to KIITBites</Text>
+            <Text style={styles.subtitle}>Order your favorite food hassle-free!</Text>
+
+            {/* Buttons for Login, Signup, and Searching */}
+            <TouchableOpacity
+                style={styles.button}
+                onPress={() => navigation.navigate('Login')}>
+                <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={styles.button}
+                onPress={() => navigation.navigate('Signup')}>
+                <Text style={styles.buttonText}>Signup</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={[styles.button, styles.searchButton]}
+                onPress={() => navigation.navigate('Search')}>
+                <Text style={styles.buttonText}>Start Searching</Text>
+            </TouchableOpacity>
+
+            {/* Bottom Navigation */}
+            <View style={styles.navBar}>
+                <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+                    <Icon name="account" size={30} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('Orders')}>
+                    <Icon name="clipboard-list" size={30} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
+                    <Icon name="cart" size={30} color="white" />
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f8f9fa',
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    subtitle: {
+        fontSize: 16,
+        color: '#777',
+        marginBottom: 30,
+    },
+    button: {
+        width: '80%',
+        padding: 12,
+        marginVertical: 10,
+        backgroundColor: '#007bff',
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    buttonText: {
+        fontSize: 18,
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    searchButton: {
+        backgroundColor: '#28a745',
+    },
+    navBar: {
+        flexDirection: 'row',
+        position: 'absolute',
+        bottom: 20,
+        width: '90%',
+        justifyContent: 'space-around',
+        backgroundColor: '#343a40',
+        padding: 15,
+        borderRadius: 25,
+    }
 });
+
+export default HomePage;
