@@ -40,11 +40,11 @@ export default function LoginScreen({ navigation }) {
 
           <View style={styles.formContainer}>
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>EMAIL</Text>
+              <Text style={styles.inputLabel}>EMAIL or PHONE</Text>
               <View style={styles.inputContainer}>
                 <TextInput
                   style={styles.input}
-                  placeholder="example@gmail.com"
+                  placeholder="Email or Phone"
                   placeholderTextColor="#8a8a8a"
                   value={email}
                   onChangeText={setEmail}
@@ -290,6 +290,6 @@ const styles = StyleSheet.create({
   },
   topleftimage:{
     position: 'absolute',
-    
+
   }
 });
