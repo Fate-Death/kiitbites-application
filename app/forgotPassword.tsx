@@ -54,6 +54,7 @@ export default function LoginScreen() {
               style={styles.loginButton} 
               onPress={() => {
                 Keyboard.dismiss();
+                router.push("/otp_verification")
                 // Add your send code logic here
               }}
             >
