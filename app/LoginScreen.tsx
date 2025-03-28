@@ -14,8 +14,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
 
 export default function LoginScreen({ }) {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -89,18 +91,26 @@ export default function LoginScreen({ }) {
                 <Text style={styles.rememberText}>Remember me</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity onPress={() => {Keyboard.dismiss()}}>
+              <TouchableOpacity onPress={() => { 
+                Keyboard.dismiss() 
+                router.push("/forgotPassword")
+                }}>
                 <Text style={styles.forgotText}>Forgot Password</Text>
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.loginButton} onPress={() => {Keyboard.dismiss()}}>
+            <TouchableOpacity style={styles.loginButton} onPress={() => {
+              Keyboard.dismiss()
+              }}>
               <Text style={styles.loginButtonText}>LOG IN</Text>
             </TouchableOpacity>
 
             <View style={styles.signupContainer}>
               <Text style={styles.noAccountText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => {Keyboard.dismiss()}}>
+              <TouchableOpacity onPress={() => {
+                Keyboard.dismiss()
+                router.push("/signup")
+                }}>
                 <Text style={styles.signupText}>SIGN UP</Text>
               </TouchableOpacity>
             </View>
