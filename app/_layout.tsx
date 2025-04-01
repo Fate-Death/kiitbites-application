@@ -4,7 +4,7 @@ export default function RootLayout() {
  //return <Stack screenOptions={{headerShown:false}}/>;
   return(
     <Stack screenOptions={{headerShown:false}}>
-      <Stack.Screen name="LoginScreen"/>
+      <Stack.Screen name="../"/>
     </Stack>
   );
 } 
