@@ -28,8 +28,10 @@ export default function LoginScreen() {
           style={styles.keyboardAvoidView}
         >
           <View style={styles.headerContainer}>
-            <Image
-              source={require('../assets/images/top_left_icon.png')}
+          <Image
+              source={{
+                uri: "https://res.cloudinary.com/dt45pu5mx/image/upload/v1743530399/top_left_icon_jbwtev.png",
+              }}
               style={styles.topleftimage}
             />
             <Text style={styles.headerTitle}>Forgot Password</Text>
@@ -54,7 +56,7 @@ export default function LoginScreen() {
               style={styles.loginButton} 
               onPress={() => {
                 Keyboard.dismiss();
-                router.push("/otp_verification")
+                router.push("/otpverification/OtpVerification")
                 // Add your send code logic here
               }}
             >

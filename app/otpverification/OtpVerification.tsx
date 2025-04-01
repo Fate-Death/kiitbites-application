@@ -16,34 +16,36 @@ import { useRouter } from 'expo-router';
 
 export default function OTPVerificationScreen() {
   const router = useRouter();
-  const [otp, setOtp] = useState(['', '', '', '']);
-//   const inputRefs = useRef([]);
-    const inputRefs = useRef<Array<TextInput | null>>([]);
+  const [otp, setOtp] = useState<string[]>(['', '', '', '']);
+  const inputRefs = useRef<(TextInput | null)[]>([]); // Allow null values
 
-  const handleChange = (text, index) => {
-    if (text.length > 1) return;
+  const handleChange = (text: string, index: number) => {
+    if (!text) return; // Ignore empty input
     const newOtp = [...otp];
-    newOtp[index] = text;
+    newOtp[index] = text.charAt(0); // Ensure only one character is taken
     setOtp(newOtp);
 
-    if (text && index < 3) {
+    if (index < 3 && text) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
-  const handleBackspace = (text, index) => {
-    if (!text && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
+  const handleBackspace = (index: number) => {
+    if (index === 0) return;
+    const newOtp = [...otp];
+    newOtp[index] = '';
+    newOtp[index - 1] = '';
+    setOtp(newOtp);
+    inputRefs.current[index - 1]?.focus();
   };
 
   const verifyOTP = () => {
     Keyboard.dismiss();
     const otpCode = otp.join('');
     console.log('Entered OTP:', otpCode);
-    
+
     if (otpCode === '1234') {
-      router.push('/LoginScreen');
+      router.push('/login/LoginForm');
     } else {
       alert('Invalid OTP. Please try again.');
     }
@@ -59,7 +61,9 @@ export default function OTPVerificationScreen() {
         >
           <View style={styles.headerContainer}>
             <Text style={styles.headerTitle}>Enter OTP Code</Text>
-            <Text style={styles.headerSubtitle}>Please enter the 4-digit code sent to your phone</Text>
+            <Text style={styles.headerSubtitle}>
+              Please enter the 4-digit code sent to your phone
+            </Text>
           </View>
 
           <View style={styles.formContainer}>
@@ -67,7 +71,7 @@ export default function OTPVerificationScreen() {
               {otp.map((digit, index) => (
                 <TextInput
                   key={index}
-                  ref={(el) => (inputRefs.current[index] = el)}
+                  ref={(el) => (inputRefs.current[index] = el)} // Fix ref assignment
                   style={styles.otpInput}
                   keyboardType="number-pad"
                   maxLength={1}
@@ -75,7 +79,7 @@ export default function OTPVerificationScreen() {
                   onChangeText={(text) => handleChange(text, index)}
                   onKeyPress={({ nativeEvent }) => {
                     if (nativeEvent.key === 'Backspace') {
-                      handleBackspace(digit, index);
+                      handleBackspace(index);
                     }
                   }}
                 />
@@ -91,6 +95,8 @@ export default function OTPVerificationScreen() {
     </TouchableWithoutFeedback>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {

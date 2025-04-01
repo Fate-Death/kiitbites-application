@@ -17,7 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 
-export default function LoginScreen() {
+export default function Login() {
   const router = useRouter();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -36,9 +36,9 @@ export default function LoginScreen() {
       setIsLoading(true);
       const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          Accept: "application/json",
         },
         body: JSON.stringify({ identifier, password }),
       });
@@ -47,7 +47,7 @@ export default function LoginScreen() {
 
       if (res.status === 400 && data.redirectTo) {
         router.push(
-          `/otp_verification?email=${encodeURIComponent(identifier)}&from=login`
+          `/otpverification/OtpVerification?email=${encodeURIComponent(identifier)}&from=login`
         );
         return;
       }
@@ -74,7 +74,9 @@ export default function LoginScreen() {
         >
           <View style={styles.headerContainer}>
             <Image
-              source={require("../assets/images/top_left_icon.png")}
+              source={{
+                uri: "https://res.cloudinary.com/dt45pu5mx/image/upload/v1743530399/top_left_icon_jbwtev.png",
+              }}
               style={styles.topleftimage}
             />
             <Text style={styles.headerTitle}>Login</Text>
@@ -82,7 +84,6 @@ export default function LoginScreen() {
               Please sign in to your existing account
             </Text>
           </View>
-
           <View style={styles.formContainer}>
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>EMAIL or PHONE</Text>
@@ -124,7 +125,7 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.rememberForgotContainer}>
-              <TouchableOpacity onPress={() => router.push("/forgotPassword")}>
+              <TouchableOpacity onPress={() => router.push("/forgotpassword/ForgotPassword")}>
                 <Text style={styles.forgotText}>Forgot Password</Text>
               </TouchableOpacity>
             </View>
@@ -143,7 +144,9 @@ export default function LoginScreen() {
 
             <View style={styles.signupContainer}>
               <Text style={styles.noAccountText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => router.push("/signup")}>
+              <TouchableOpacity
+                onPress={() => router.push("/signup/SignupForm")}
+              >
                 <Text style={styles.signupText}>SIGN UP</Text>
               </TouchableOpacity>
             </View>
