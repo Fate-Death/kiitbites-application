@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -16,49 +16,68 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 
-export default function Login() {
-  const router = useRouter();
+const BACKEND_URL = "http://192.168.1.5:5002";
+
+export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const BACKEND_URL = "http://localhost:5001";
+  useEffect(() => {
+    const checkLogin = async () => {
+      const token = await SecureStore.getItemAsync("user-jwt");
+      if (token) {
+        router.replace("/"); // redirect to home
+      }
+    };
+    checkLogin();
+  }, []);
 
   const handleSubmit = async () => {
+    setError("");
+
     if (!identifier || !password) {
-      console.error("Please fill all the fields.");
+      setError("Email/username and password are required.");
       return;
     }
 
     try {
       setIsLoading(true);
-      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ identifier, password }),
+      const response = await axios.post(`${BACKEND_URL}/api/auth/login`, {
+        identifier,
+        password,
       });
 
-      const data = await res.json();
+      const { token, message } = response.data;
 
-      if (res.status === 400 && data.redirectTo) {
-        router.push(
-          `/otpverification/OtpVerification?email=${encodeURIComponent(identifier)}&from=login`
-        );
-        return;
+      if (!token) {
+        throw new Error("Invalid response from server.");
       }
 
-      if (res.ok) {
-        console.log("Login successful", data);
+      await SecureStore.setItemAsync("user-jwt", String(token));
+
+      router.replace("/"); // or navigate to home or tabs layout
+    } catch (error: any) {
+      console.error("Login error:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+
+      // Handle backend-sent errors like OTP required or rate limit
+      const backendMessage = error.response?.data?.message || 
+        (error instanceof Error ? error.message : "Login failed");
+      const redirectTo = error.response?.data?.redirectTo;
+
+      if (redirectTo) {
+        router.push(redirectTo); // redirect to OTP verification
       } else {
-        console.error("Login failed:", data.message || "Unknown error");
+        setError(backendMessage);
       }
-    } catch (error) {
-      console.error("An error occurred:", error);
     } finally {
       setIsLoading(false);
     }
@@ -84,7 +103,10 @@ export default function Login() {
               Please sign in to your existing account
             </Text>
           </View>
+
           <View style={styles.formContainer}>
+            {error ? <Text style={{ color: "red", marginBottom: 10 }}>{error}</Text> : null}
+
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>EMAIL or PHONE</Text>
               <View style={styles.inputContainer}>
@@ -125,7 +147,9 @@ export default function Login() {
             </View>
 
             <View style={styles.rememberForgotContainer}>
-              <TouchableOpacity onPress={() => router.push("/forgotpassword/ForgotPassword")}>
+              <TouchableOpacity
+                onPress={() => router.push("/forgotpassword/ForgotPassword")}
+              >
                 <Text style={styles.forgotText}>Forgot Password</Text>
               </TouchableOpacity>
             </View>
@@ -144,9 +168,7 @@ export default function Login() {
 
             <View style={styles.signupContainer}>
               <Text style={styles.noAccountText}>Don't have an account? </Text>
-              <TouchableOpacity
-                onPress={() => router.push("/signup/SignupForm")}
-              >
+              <TouchableOpacity onPress={() => router.push("/signup/SignupForm")}>
                 <Text style={styles.signupText}>SIGN UP</Text>
               </TouchableOpacity>
             </View>
