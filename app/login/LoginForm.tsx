@@ -18,8 +18,7 @@ import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-
-const BACKEND_URL = "http://192.168.1.5:5002";
+import { config } from "../../config";
 
 export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
@@ -49,7 +48,7 @@ export default function LoginScreen() {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`${BACKEND_URL}/api/auth/login`, {
+      const response = await axios.post(`${config.backendUrl}/api/auth/login`, {
         identifier,
         password,
       });

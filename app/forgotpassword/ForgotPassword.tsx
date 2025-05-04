@@ -10,14 +10,48 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  ActivityIndicator
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import axios from 'axios';
+import { config } from '../../config';
 
-export default function LoginScreen() {
+export default function ForgotPasswordScreen() {
+  const [identifier, setIdentifier] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const router = useRouter();
-  const [email, setEmail] = useState('');
+
+  const handleSubmit = async () => {
+    setError('');
+    setSuccess('');
+
+    if (!identifier) {
+      setError('Email or phone number is required.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await axios.post(`${config.backendUrl}/api/auth/forgotpassword`, {
+        identifier,
+      });
+
+      setSuccess('OTP has been sent to your email. Please check your inbox.');
+      router.push({
+        pathname: '/otpverification/OtpVerification',
+        params: { email: identifier, from: 'forgotpassword' },
+      });
+    } catch (error: any) {
+      console.error('Forgot Password error:', error);
+      setError(error.response?.data?.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -28,40 +62,52 @@ export default function LoginScreen() {
           style={styles.keyboardAvoidView}
         >
           <View style={styles.headerContainer}>
-          <Image
+            <Image
               source={{
                 uri: "https://res.cloudinary.com/dt45pu5mx/image/upload/v1743530399/top_left_icon_jbwtev.png",
               }}
               style={styles.topleftimage}
             />
             <Text style={styles.headerTitle}>Forgot Password</Text>
-            <Text style={styles.headerSubtitle}>Please sign in to your existing account</Text>
+            <Text style={styles.headerSubtitle}>Enter your email or phone number to receive OTP</Text>
           </View>
 
           <View style={styles.formContainer}>
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            {success ? <Text style={styles.successText}>{success}</Text> : null}
+
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>EMAIL or PHONE</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Email or Phone"
-                placeholderTextColor="#8a8a8a"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email or Phone"
+                  placeholderTextColor="#8a8a8a"
+                  value={identifier}
+                  onChangeText={setIdentifier}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
             </View>
 
-            <TouchableOpacity 
-              style={styles.loginButton} 
-              onPress={() => {
-                Keyboard.dismiss();
-                router.push("/otpverification/OtpVerification")
-                // Add your send code logic here
-              }}
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleSubmit}
+              disabled={isLoading}
             >
-              <Text style={styles.loginButtonText}>SEND CODE</Text>
+              {isLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.submitButtonText}>Send OTP</Text>
+              )}
             </TouchableOpacity>
+
+            <View style={styles.backToLoginContainer}>
+              <TouchableOpacity onPress={() => router.back()}>
+                <Text style={styles.backToLoginText}>Back to Login</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -114,38 +160,52 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 8,
   },
-  input: {
+  inputContainer: {
     backgroundColor: '#e8e8e8',
     borderRadius: 12,
-    height: 55,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 15,
+    height: 55,
+  },
+  input: {
+    flex: 1,
+    height: '100%',
     fontSize: 16,
     color: '#333',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-   },
-   loginButton: {
-     backgroundColor: '#009688',
-     borderRadius: 12,
-     height: 55,
-     justifyContent: 'center',
-     alignItems: 'center',
-     marginBottom: 20,
-     shadowColor: '#000',
-     shadowOffset: { width: 0, height: 2 },
-     shadowOpacity: 0.2,
-     shadowRadius: 3,
-     elevation: 3,
-   },
-   loginButtonText: {
-     color: 'white',
-     fontSize: 16,
-     fontWeight: 'bold',
-   },
-   topleftimage:{
-     position: 'absolute',
-   }
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+  },
+  successText: {
+    color: 'green',
+    marginBottom: 10,
+  },
+  submitButton: {
+    backgroundColor: '#009688',
+    borderRadius: 12,
+    height: 55,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  backToLoginContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  backToLoginText: {
+    fontSize: 14,
+    color: '#009688',
+    fontWeight: 'bold',
+  },
+  topleftimage: {
+    position: 'absolute',
+  },
 });
