@@ -17,39 +17,38 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import { config } from "../../config";
 
-export default function OtpVerificationScreen() {
-  const [otp, setOtp] = useState("");
+export default function ResetPasswordScreen() {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const { email, from } = useLocalSearchParams();
+  const { email } = useLocalSearchParams();
 
   const handleSubmit = async () => {
     setError("");
 
-    if (!otp) {
-      setError("OTP is required.");
+    if (!password || !confirmPassword) {
+      setError("Both password fields are required.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`${config.backendUrl}/api/auth/otpverification`, {
+      const response = await axios.post(`${config.backendUrl}/api/auth/resetpassword`, {
         email,
-        otp,
+        password,
       });
 
-      if (from === "forgotpassword") {
-        router.push({
-          pathname: "/resetpassword/ResetPassword",
-          params: { email }
-        });
-      } else {
-        router.replace("/");
-      }
+      router.replace("/login/LoginForm");
     } catch (error: any) {
-      console.error("OTP Verification error:", error);
-      setError(error.response?.data?.message || "Invalid OTP. Please try again.");
+      console.error("Reset Password error:", error);
+      setError(error.response?.data?.message || "Failed to reset password. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -64,9 +63,9 @@ export default function OtpVerificationScreen() {
           style={styles.keyboardAvoidView}
         >
           <View style={styles.headerContainer}>
-            <Text style={styles.headerTitle}>Verify OTP</Text>
+            <Text style={styles.headerTitle}>Reset Password</Text>
             <Text style={styles.headerSubtitle}>
-              Enter the OTP sent to your email
+              Enter your new password
             </Text>
           </View>
 
@@ -74,16 +73,29 @@ export default function OtpVerificationScreen() {
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>OTP</Text>
+              <Text style={styles.inputLabel}>NEW PASSWORD</Text>
               <View style={styles.inputContainer}>
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter OTP"
+                  placeholder="Enter new password"
                   placeholderTextColor="#8a8a8a"
-                  value={otp}
-                  onChangeText={setOtp}
-                  keyboardType="number-pad"
-                  maxLength={6}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>CONFIRM PASSWORD</Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Confirm new password"
+                  placeholderTextColor="#8a8a8a"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  secureTextEntry
                 />
               </View>
             </View>
@@ -96,13 +108,13 @@ export default function OtpVerificationScreen() {
               {isLoading ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text style={styles.submitButtonText}>Verify OTP</Text>
+                <Text style={styles.submitButtonText}>Reset Password</Text>
               )}
             </TouchableOpacity>
 
-            <View style={styles.resendContainer}>
+            <View style={styles.backToLoginContainer}>
               <TouchableOpacity onPress={() => router.back()}>
-                <Text style={styles.resendText}>Back</Text>
+                <Text style={styles.backToLoginText}>Back</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -163,10 +175,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   submitButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
-  resendContainer: {
+  backToLoginContainer: {
     flexDirection: "row",
     justifyContent: "center",
     marginBottom: 20,
   },
-  resendText: { fontSize: 14, color: "#009688", fontWeight: "bold" },
-});
+  backToLoginText: { fontSize: 14, color: "#009688", fontWeight: "bold" },
+}); 
