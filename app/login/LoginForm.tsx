@@ -63,9 +63,11 @@ export default function LoginScreen() {
 
       router.replace("/"); // or navigate to home or tabs layout
     } catch (error: any) {
-      console.error("Login error:", error);
-      console.error("Error response:", error.response?.data);
-      console.error("Error status:", error.response?.status);
+      console.error("Login error details:", {
+        error: error,
+        responseData: error.response?.data,
+        statusCode: error.response?.status,
+      });
 
       // Handle backend-sent errors like OTP required or rate limit
       const backendMessage = error.response?.data?.message || 
