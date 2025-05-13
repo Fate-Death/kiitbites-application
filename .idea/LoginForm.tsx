@@ -18,8 +18,6 @@ import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-import Toast from 'react-native-toast-message';
-import { CustomToast } from '../CustomToast';
 
 const BACKEND_URL = "http://localhost:5002";
 
@@ -48,13 +46,7 @@ export default function LoginScreen() {
     setError("");
 
     if (!identifier || !password) {
-     
-        Toast.show({
-              type: 'error',
-              text1: 'Validation Error',
-              text2: 'Email/username and password are required.',
-              position: 'bottom',
-            });
+      setError("Email/username and password are required.");
       return;
     }
 
@@ -84,7 +76,7 @@ export default function LoginScreen() {
   };
 
   return (
-   
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
         <StatusBar style="light" />
         <KeyboardAvoidingView
@@ -174,7 +166,7 @@ export default function LoginScreen() {
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -217,8 +209,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 15,
     height: 55,
-     borderWidth: 1.5,          // Add this
-  borderColor: "#000000", 
   },
   input: { flex: 1, height: "100%", fontSize: 16, color: "#333" },
   eyeIcon: { padding: 5 },
@@ -249,6 +239,3 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
 });
-
-
-
