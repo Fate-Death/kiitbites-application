@@ -20,8 +20,8 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import Toast from 'react-native-toast-message';
 import { CustomToast } from '../CustomToast';
+import { config } from "../../config";
 
-const BACKEND_URL = "http://localhost:5002";
 
 export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
@@ -60,24 +60,37 @@ export default function LoginScreen() {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`, {
+      const response = await axios.post(`${config.backendUrl}/api/auth/login`, {
         identifier,
         password,
       });
 
-      const { jwt, user } = response.data;
+      const { token, message } = response.data;
 
-      if (!jwt || !user) {
+      if (!token) {
         throw new Error("Invalid response from server.");
       }
 
-      await SecureStore.setItemAsync("user-jwt", String(jwt));
-      await SecureStore.setItemAsync("user-data", JSON.stringify(user));
+      await SecureStore.setItemAsync("user-jwt", String(token));
 
-      router.replace("/"); // or "/(tabs)" if using tabs layout
-    } catch (error) {
-      console.error("Login error:", error);
-      setError("Invalid email/username or password.");
+       router.replace("/"); // or navigate to home or tabs layout
+    } catch (error: any) {
+      console.error("Login error details:", {
+        error: error,
+        responseData: error.response?.data,
+        statusCode: error.response?.status,
+      });
+
+      // Handle backend-sent errors like OTP required or rate limit
+      const backendMessage = error.response?.data?.message || 
+        (error instanceof Error ? error.message : "Login failed");
+      const redirectTo = error.response?.data?.redirectTo;
+
+      if (redirectTo) {
+        router.push(redirectTo); // redirect to OTP verification
+      } else {
+        setError(backendMessage);
+      }
     } finally {
       setIsLoading(false);
     }
