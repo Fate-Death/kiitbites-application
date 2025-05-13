@@ -1,9 +1,198 @@
-import React, { memo } from 'react'
 
-const signup = memo(() => {
+
+
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { router } from 'expo-router';
+import Toast from 'react-native-toast-message';
+import { CustomToast } from '../CustomToast';
+
+export default function SignupStep1() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+
+  const handleNext = () => {
+    if (!name || !email || !phone) {
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Please enter name, email, and 10-digit phone number.',
+        position: 'bottom',
+      });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Email',
+        text2: 'Please enter a valid email address.',
+        position: 'bottom',
+      });
+      return;
+    }
+
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone)) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Phone',
+        text2: 'Phone number must be exactly 10 digits.',
+        position: 'bottom',
+      });
+      return;
+    }
+
+    router.push({
+      pathname: '/signup/password_signup',
+      params: { name, email, phone },
+    });
+  };
+
   return (
-    <div>signup</div>
-  )
-})
+    <>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <Text style={styles.title}>Sign Up</Text>
+        <Text style={styles.subtitle}>Please sign up to get started</Text>
 
-export default signup
+        <View style={styles.cardWrapper}>
+          <View style={styles.card}>
+            <Text style={styles.label}>NAME</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="xyz"
+              placeholderTextColor="#8a8a8a"
+              value={name}
+              onChangeText={setName}
+            />
+
+            <Text style={styles.label}>EMAIL</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="example@gmail.com"
+              placeholderTextColor="#8a8a8a"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+            />
+
+            <Text style={styles.label}>PHONE</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="1234567890"
+              placeholderTextColor="#8a8a8a"
+              keyboardType="numeric"
+              maxLength={10}
+              value={phone}
+             // onChangeText={setPhone}
+             onChangeText={(text) => setPhone(text.replace(/[^0-9]/g, ''))}
+            />
+
+            <TouchableOpacity style={styles.button} onPress={handleNext}>
+              <Text style={styles.buttonText}>Next</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.footer}>
+              Already have an account?{' '}
+              <TouchableOpacity onPress={() => router.push('/login/LoginForm')}>
+                <Text style={styles.login}>LOGIN</Text>
+              </TouchableOpacity>
+            </Text>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+
+      
+      <Toast
+        config={{
+          error: (props) => <CustomToast {...props} />,
+        }}
+      />
+    </>
+  );
+}
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#1a1a2e',
+      alignItems: 'center',
+      paddingTop: 60,
+    },
+    title: {
+      color: '#FFFFFF',
+      fontSize: 28,
+      fontWeight: '700',
+      marginBottom: 6,
+    },
+    subtitle: {
+      color: '#B0B0B0',
+      fontSize: 16,
+      marginBottom: 28,
+    },
+    cardWrapper: {
+      flex: 1,
+      width: '100%',
+      backgroundColor: '#F6F6F6',
+      borderRadius: 24,
+      padding: 22,
+      justifyContent: 'flex-start',
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderBottomLeftRadius: 0,
+      borderBottomEndRadius: 0,
+      marginTop: 40,
+    },
+    card: {
+      flex: 1,
+    },
+    label: {
+      fontSize: 13,
+      fontWeight: '600',
+      marginTop: 14,
+      marginBottom: 6,
+      color: '#333333',
+    },
+    input: {
+      backgroundColor: '#EDEDED',
+      padding: 14,
+      borderRadius: 10,
+      fontSize: 16,
+      color: '#111',
+    },
+    button: {
+      backgroundColor: '#009688',
+      padding: 16,
+      borderRadius: 12,
+      marginTop: 32,
+    },
+    buttonText: {
+      color: '#FFFFFF',
+      textAlign: 'center',
+      fontWeight: 'bold',
+      fontSize: 16,
+    },
+    footer: {
+      marginTop: 16,
+      color: '#333',
+      fontSize: 14,
+      textAlign: 'center',
+    },
+    login: {
+      color: '#00C2B2',
+      fontWeight: 'bold',
+    },
+  });

@@ -18,10 +18,8 @@ import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-import Toast from 'react-native-toast-message';
-import { CustomToast } from '../CustomToast';
-import { config } from "../../config";
 
+const BACKEND_URL = "http://localhost:5002";
 
 export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
@@ -48,56 +46,37 @@ export default function LoginScreen() {
     setError("");
 
     if (!identifier || !password) {
-     
-        Toast.show({
-              type: 'error',
-              text1: 'Validation Error',
-              text2: 'Email/username and password are required.',
-              position: 'bottom',
-            });
+      setError("Email/username and password are required.");
       return;
     }
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`${config.backendUrl}/api/auth/login`, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`, {
         identifier,
         password,
       });
 
-      const { token, message } = response.data;
+      const { jwt, user } = response.data;
 
-      if (!token) {
+      if (!jwt || !user) {
         throw new Error("Invalid response from server.");
       }
 
-      await SecureStore.setItemAsync("user-jwt", String(token));
+      await SecureStore.setItemAsync("user-jwt", String(jwt));
+      await SecureStore.setItemAsync("user-data", JSON.stringify(user));
 
-       router.replace("/"); // or navigate to home or tabs layout
-    } catch (error: any) {
-      console.error("Login error details:", {
-        error: error,
-        responseData: error.response?.data,
-        statusCode: error.response?.status,
-      });
-
-      // Handle backend-sent errors like OTP required or rate limit
-      const backendMessage = error.response?.data?.message || 
-        (error instanceof Error ? error.message : "Login failed");
-      const redirectTo = error.response?.data?.redirectTo;
-
-      if (redirectTo) {
-        router.push(redirectTo); // redirect to OTP verification
-      } else {
-        setError(backendMessage);
-      }
+      router.replace("/"); // or "/(tabs)" if using tabs layout
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Invalid email/username or password.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-   
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
         <StatusBar style="light" />
         <KeyboardAvoidingView
@@ -187,7 +166,7 @@ export default function LoginScreen() {
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -230,8 +209,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 15,
     height: 55,
-     borderWidth: 1.5,          // Add this
-  borderColor: "#000000", 
   },
   input: { flex: 1, height: "100%", fontSize: 16, color: "#333" },
   eyeIcon: { padding: 5 },
@@ -262,6 +239,3 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
 });
-
-
-
