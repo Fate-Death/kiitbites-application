@@ -78,7 +78,7 @@ export default function GenderForm() {
         // Navigate to OTP verification
         setTimeout(() => {
           router.push({
-            pathname: '/otp/otpverification' as any,
+            pathname: '/otp/otpverification',
             params: { email }
           });
         }, 2000);
