@@ -23,6 +23,7 @@ import { CustomToast } from '../CustomToast';
 import { config } from "../../config";
 
 
+
 export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -35,10 +36,13 @@ export default function LoginScreen() {
 
   useEffect(() => {
     const checkLogin = async () => {
-      // Use the correct method name: getItemAsync
-      const token = await SecureStore.getItemAsync("user-jwt");
-      if (token) {
-        router.replace("/"); // redirect to home if token exists
+      try {
+        const token = await SecureStore.getItemAsync("user-jwt");
+        if (token) {
+          router.replace("/profile/ProfileForm");
+        }
+      } catch (error) {
+        console.error("Error checking login status:", error);
       }
     };
     checkLogin();
@@ -71,14 +75,24 @@ export default function LoginScreen() {
         throw new Error("Invalid response from server.");
       }
 
-      await SecureStore.setItemAsync("user-jwt", String(token));
-
-       router.replace("/"); // or navigate to home or tabs layout
+      try {
+        console.log("Attempting to store token:", token);
+        await SecureStore.setItemAsync("user-jwt", token);
+        console.log("Token stored successfully");
+        router.replace("/profile/ProfileForm");
+      } catch (storageError) {
+        console.error("Detailed storage error:", storageError);
+        if (storageError instanceof Error) {
+          throw new Error(`Failed to store login credentials: ${storageError.message}`);
+        }
+        throw new Error("Failed to store login credentials");
+      }
     } catch (error: any) {
       console.error("Login error details:", {
         error: error,
         responseData: error.response?.data,
         statusCode: error.response?.status,
+        message: error.message
       });
 
       // Handle backend-sent errors like OTP required or rate limit

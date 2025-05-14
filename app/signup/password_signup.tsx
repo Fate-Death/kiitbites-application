@@ -76,10 +76,11 @@ export default function SignupStep2() {
         name,
         email,
         phone,
-        password,
         type
       }
     });
+    // Store password in memory temporarily
+    (global as any).tempPassword = password;
   };
 
   return (
