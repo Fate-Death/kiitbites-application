@@ -1,6 +1,3 @@
-
-
-
 import React, { useState } from 'react';
 import {
   View,
@@ -55,7 +52,12 @@ export default function SignupStep1() {
 
     router.push({
       pathname: '/signup/password_signup',
-      params: { name, email, phone },
+      params: { 
+        name, 
+        email, 
+        phone,
+        type: 'user-standard' // Default user type
+      },
     });
   };
 
@@ -73,7 +75,7 @@ export default function SignupStep1() {
             <Text style={styles.label}>NAME</Text>
             <TextInput
               style={styles.input}
-              placeholder="xyz"
+              placeholder="Full Name"
               placeholderTextColor="#8a8a8a"
               value={name}
               onChangeText={setName}
