@@ -14,11 +14,15 @@ import { useLocalSearchParams, router } from 'expo-router';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Toast from 'react-native-toast-message';
 import { CustomToast } from '../CustomToast';
+import Constants from 'expo-constants';
 
+const BACKEND_URL = Constants.expoConfig?.extra?.backendUrl || 'http://192.168.1.5:5002';
 
 export default function GenderForm() {
+  const { name, email, phone, password, type } = useLocalSearchParams();
   const [gender, setGender] = useState('');
   const [showOptions, setShowOptions] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const genderOptions = ['Male', 'Female'];
 
   const handleSelect = (value: string) => {
@@ -26,93 +30,149 @@ export default function GenderForm() {
     setShowOptions(false);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!gender) {
-        Toast.show({
-            type: 'error',
-            text1: 'Validation Error',
-            text2: 'Please choose your gender.',
-            position: 'bottom',
-          });
-      return;
-    }
-    Toast.show({
-        type: 'success',
-        text1: 'Signup Successful!',
-      
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Please choose your gender.',
         position: 'bottom',
       });
-    
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: name,
+          email,
+          phone,
+          password,
+          gender,
+          type
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Toast.show({
+          type: 'success',
+          text1: 'Signup Successful!',
+          text2: 'Please verify your email with the OTP sent.',
+          position: 'bottom',
+        });
+        
+        // Store token if provided
+        if (data.token) {
+          // You might want to use a secure storage solution here
+          // For now, we'll just store it in memory
+          (global as any).token = data.token;
+        }
+
+        // Navigate to OTP verification
+        setTimeout(() => {
+          router.push({
+            pathname: '/otp/otpverification' as any,
+            params: { email }
+          });
+        }, 2000);
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Signup Failed',
+          text2: data.message || 'Something went wrong. Please try again.',
+          position: 'bottom',
+        });
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Network Error',
+        text2: 'Please check your internet connection and try again.',
+        position: 'bottom',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <>
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <Text style={styles.title}>Gender</Text>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <Text style={styles.title}>Gender</Text>
 
-      <View style={styles.cardWrapper}>
-        <Text style={styles.label}>GENDER</Text>
-        <TouchableOpacity
-          style={styles.dropdown}
-          onPress={() => setShowOptions(true)}
-        >
-          <Text style={{ color: gender ? '#000' : '#8a8a8a', fontSize: 16 }}>
-            {gender || 'Select Gender'}
-          </Text>
-          <MaterialCommunityIcons
-            name="chevron-down"
-            size={24}
-            color="#666"
-            style={{ position: 'absolute', right: 10 }}
-          />
-        </TouchableOpacity>
+        <View style={styles.cardWrapper}>
+          <Text style={styles.label}>GENDER</Text>
+          <TouchableOpacity
+            style={styles.dropdown}
+            onPress={() => setShowOptions(true)}
+          >
+            <Text style={{ color: gender ? '#000' : '#8a8a8a', fontSize: 16 }}>
+              {gender || 'Select Gender'}
+            </Text>
+            <MaterialCommunityIcons
+              name="chevron-down"
+              size={24}
+              color="#666"
+              style={{ position: 'absolute', right: 10 }}
+            />
+          </TouchableOpacity>
 
-        
-        <Modal transparent visible={showOptions} animationType="fade">
-          <TouchableWithoutFeedback onPress={() => setShowOptions(false)}>
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                {genderOptions.map((option) => (
-                  <TouchableOpacity
-                    key={option}
-                    style={styles.option}
-                    onPress={() => handleSelect(option)}
-                  >
-                    <Text style={styles.optionText}>{option}</Text>
-                  </TouchableOpacity>
-                ))}
+          <Modal transparent visible={showOptions} animationType="fade">
+            <TouchableWithoutFeedback onPress={() => setShowOptions(false)}>
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                  {genderOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      style={styles.option}
+                      onPress={() => handleSelect(option)}
+                    >
+                      <Text style={styles.optionText}>{option}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
+            </TouchableWithoutFeedback>
+          </Modal>
 
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={[styles.button, styles.halfButton]}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.buttonText}>Back</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={[styles.button, styles.halfButton]}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.buttonText}>Back</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.button, styles.halfButton]}
-            onPress={handleSubmit}
-          >
-            <Text style={styles.buttonText}>Submit</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.halfButton]}
+              onPress={handleSubmit}
+              disabled={isLoading}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? 'Submitting...' : 'Submit'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
-    <Toast
-            config={{
-              error: (props) => <CustomToast {...props} />,
-              success: (props) => <CustomToast {...props} />,
-            }}
-          />
-        </>
+      </KeyboardAvoidingView>
+      <Toast
+        config={{
+          error: (props) => <CustomToast {...props} />,
+          success: (props) => <CustomToast {...props} />,
+        }}
+      />
+    </>
   );
 }
 const styles = StyleSheet.create({

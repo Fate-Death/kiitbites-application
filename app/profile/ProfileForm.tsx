@@ -16,44 +16,47 @@ import {
 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { config } from '../../config';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const BACKEND_URL = config.backendUrl;
 
 export default function ProfileScreen() {
   const [showPersonalInfo, setShowPersonalInfo] = useState(false);
   const [user, setUser] = useState<{ fullName: string; email: string; phone: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     const token = await AsyncStorage.getItem('token');
-  //     if (!token) {
-  //       router.replace('/login/LoginForm');
-  //       return;
-  //     }
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        router.replace('/login/LoginForm');
+        return;
+      }
 
-  //     try {
-  //       const response = await fetch(`${BACKEND_URL}/api/auth/user`, {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       });
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/auth/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-  //       if (response.ok) {
-  //         const data = await response.json();
-  //         setUser(data);
-  //       } else {
-  //         await AsyncStorage.removeItem('token');
-  //         router.replace('/login/LoginForm');
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching user:', error);
-  //       await AsyncStorage.removeItem('token');
-  //       router.replace('/login/LoginForm');
-  //     }
-  //   };
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data);
+        } else {
+          await AsyncStorage.removeItem('token');
+          router.replace('/login/LoginForm');
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        Alert.alert('Error', 'Failed to fetch user data. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  //   fetchUser();
-  // }, []);
+    fetchUser();
+  }, []);
 
   const handleLogout = async () => {
     Alert.alert('Log Out', 'Are you sure you want to log out?', [

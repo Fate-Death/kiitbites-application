@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import {
   View,
@@ -16,7 +14,7 @@ import Toast from 'react-native-toast-message';
 import { CustomToast } from '../CustomToast';
 
 export default function SignupStep2() {
-  const { name, email } = useLocalSearchParams();
+  const { name, email, phone, type } = useLocalSearchParams();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -72,11 +70,16 @@ export default function SignupStep2() {
       return;
     }
 
-
-          setTimeout(() => {
-            router.push('/signup/GenderForm');
-          }, 1000)
-          
+    router.push({
+      pathname: '/signup/GenderForm',
+      params: {
+        name,
+        email,
+        phone,
+        password,
+        type
+      }
+    });
   };
 
   return (
