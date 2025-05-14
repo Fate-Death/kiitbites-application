@@ -19,7 +19,7 @@ import Constants from 'expo-constants';
 const BACKEND_URL = Constants.expoConfig?.extra?.backendUrl || 'http://192.168.1.5:5002';
 
 export default function GenderForm() {
-  const { name, email, phone, password, type } = useLocalSearchParams();
+  const { name, email, phone, type } = useLocalSearchParams();
   const [gender, setGender] = useState('');
   const [showOptions, setShowOptions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +52,7 @@ export default function GenderForm() {
           fullName: name,
           email,
           phone,
-          password,
+          password: (global as any).tempPassword,
           gender,
           type
         }),
@@ -61,6 +61,9 @@ export default function GenderForm() {
       const data = await response.json();
 
       if (response.ok) {
+        // Clear the temporary password from memory
+        delete (global as any).tempPassword;
+        
         Toast.show({
           type: 'success',
           text1: 'Signup Successful!',
@@ -78,7 +81,7 @@ export default function GenderForm() {
         // Navigate to OTP verification
         setTimeout(() => {
           router.push({
-            pathname: '/otp/otpverification',
+            pathname: '/otpverification/OtpVerification',
             params: { email }
           });
         }, 2000);

@@ -16,6 +16,7 @@ import { StatusBar } from "expo-status-bar";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import { config } from "../../config";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function OtpVerificationScreen() {
   const [otp, setOtp] = useState("");
@@ -39,13 +40,18 @@ export default function OtpVerificationScreen() {
         otp,
       });
 
+      // Store the token if it exists in the response
+      if (response.data.token) {
+        await AsyncStorage.setItem('token', response.data.token);
+      }
+
       if (from === "forgotpassword") {
         router.push({
           pathname: "/resetpassword/ResetPassword",
           params: { email }
         });
       } else {
-        router.replace("/");
+        router.replace("/profile/ProfileForm");
       }
     } catch (error: any) {
       console.error("OTP Verification error:", error);
