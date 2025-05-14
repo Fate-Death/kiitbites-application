@@ -65,14 +65,36 @@ export default function ProfileScreen() {
         text: 'Log Out',
         onPress: async () => {
           try {
-            await fetch(`${BACKEND_URL}/api/auth/logout`, {
+            const token = await AsyncStorage.getItem('token');
+            if (!token) {
+              await AsyncStorage.removeItem('token');
+              router.replace('/login/LoginForm');
+              return;
+            }
+
+            const response = await fetch(`${BACKEND_URL}/api/auth/logout`, {
               method: 'POST',
-              credentials: 'include',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
             });
+
+            // Clear token regardless of response status
             await AsyncStorage.removeItem('token');
-            router.replace('/login/LoginForm');
+            
+            if (response.ok) {
+              router.replace('/login/LoginForm');
+            } else {
+              // If the server response wasn't ok, still proceed with logout
+              console.warn('Server logout failed, but proceeding with client logout');
+              router.replace('/login/LoginForm');
+            }
           } catch (error) {
             console.error('Logout failed:', error);
+            // Even if there's an error, try to clear the token and redirect
+            await AsyncStorage.removeItem('token');
+            router.replace('/login/LoginForm');
           }
         },
       },
@@ -124,7 +146,7 @@ export default function ProfileScreen() {
               <Ionicons name="call" size={18} color="#00C2B2" />
               <View style={styles.infoText}>
                 <Text style={styles.label}>PHONE NUMBER</Text>
-                <Text style={styles.value}>{user?.phone ?? '-'}</Text>
+                <Text style={styles.value}>+91 {user?.phone ?? '-'}</Text>
               </View>
             </View>
           </View>

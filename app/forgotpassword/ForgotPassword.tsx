@@ -16,7 +16,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
-import { config } from '../../config';
+import { config } from '../config';
 
 export default function ForgotPasswordScreen() {
   const [identifier, setIdentifier] = useState('');
