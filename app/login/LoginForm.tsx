@@ -39,7 +39,7 @@ export default function LoginScreen() {
       try {
         const token = await SecureStore.getItemAsync("user-jwt");
         if (token) {
-          router.replace("/profile/ProfileForm");
+          router.replace("/profile/ProfilePage");
         }
       } catch (error) {
         console.error("Error checking login status:", error);
@@ -79,7 +79,7 @@ export default function LoginScreen() {
         console.log("Attempting to store token:", token);
         await SecureStore.setItemAsync("user-jwt", token);
         console.log("Token stored successfully");
-        router.replace("/profile/ProfileForm");
+        router.replace("/profile/ProfilePage");
       } catch (storageError) {
         console.error("Detailed storage error:", storageError);
         if (storageError instanceof Error) {
@@ -111,13 +111,13 @@ export default function LoginScreen() {
   };
 
   return (
-   
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="light" />
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.keyboardAvoidView}
-        >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <SafeAreaView style={styles.container}>
+          <StatusBar style="light" />
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.keyboardAvoidView}
+          >
           <View style={styles.headerContainer}>
             <Image
               source={{
@@ -199,81 +199,122 @@ export default function LoginScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#1a1a2e" },
-  keyboardAvoidView: { flex: 1, justifyContent: "flex-start", paddingTop: 40 },
+  container: {
+    flex: 1,
+    backgroundColor: '#1a1a2e',
+  },
+  keyboardAvoidView: { 
+    flex: 1, 
+    justifyContent: "flex-start" 
+  },
   headerContainer: {
     alignItems: "center",
-    justifyContent: "flex-end",
-    marginBottom: 65,
-    flex: 0.18,
-    paddingHorizontal: 20,
+    paddingTop: 90,
   },
   headerTitle: {
+    color: '#FFFFFF',
     fontSize: 28,
-    fontWeight: "bold",
-    color: "white",
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  headerSubtitle: { 
+    fontSize: 16, 
+    color: "#B0B0B0", 
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 40,
   },
-  headerSubtitle: { fontSize: 16, color: "#b3b3b3", textAlign: "center" },
   formContainer: {
-    backgroundColor: "#f5f5f5",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    padding: 25,
     flex: 1,
+    width: '100%',
+    backgroundColor: '#F6F6F6',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 22,
+    paddingTop: 40,
   },
-  inputGroup: { marginBottom: 20 },
+  inputGroup: { 
+    marginBottom: 20 
+  },
   inputLabel: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#333",
-    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#333333',
+    marginBottom: 6,
   },
   inputContainer: {
-    backgroundColor: "#e8e8e8",
-    borderRadius: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 15,
-    height: 55,
-     borderWidth: 1.5,          // Add this
-  borderColor: "#000000", 
+    backgroundColor: '#EDEDED',
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 0,
+    height: 50,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
-  input: { flex: 1, height: "100%", fontSize: 16, color: "#333" },
-  eyeIcon: { padding: 5 },
+  input: { 
+    flex: 1, 
+    height: "100%", 
+    fontSize: 16, 
+    color: "#111",
+    paddingVertical: 0,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    padding: 14,
+    margin: 0,
+    borderRadius: 10,
+  },
+  eyeIcon: { 
+    padding: 5 
+  },
   rememberForgotContainer: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    alignItems: "center",
-    marginBottom: 25,
-  },
-  forgotText: { fontSize: 14, color: "#009688", fontWeight: "500" },
-  loginButton: {
-    backgroundColor: "#009688",
-    borderRadius: 12,
-    height: 55,
-    justifyContent: "center",
-    alignItems: "center",
+    marginTop: 8,
     marginBottom: 20,
   },
-  loginButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+  forgotText: { 
+    fontSize: 14, 
+    color: "#00C2B2", 
+    fontWeight: "600" 
+  },
+  loginButton: {
+    backgroundColor: "#009688",
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  loginButtonText: { 
+    color: "white", 
+    fontSize: 16, 
+    fontWeight: "bold",
+    textAlign: 'center',
+  },
   signupContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginBottom: 20,
+    marginTop: 16,
   },
-  noAccountText: { fontSize: 14, color: "#333" },
-  signupText: { fontSize: 14, color: "#009688", fontWeight: "bold" },
+  noAccountText: { 
+    fontSize: 14, 
+    color: "#333" 
+  },
+  signupText: { 
+    fontSize: 14, 
+    color: "#00C2B2", 
+    fontWeight: "bold" 
+  },
   topleftimage: {
     position: "absolute",
+    top: 40,
+    left: 20,
   },
 });
 

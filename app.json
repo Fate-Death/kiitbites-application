@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.fatedeath.kiitbitesapplication"
     },
     "web": {
       "bundler": "metro",
@@ -46,7 +47,8 @@
       }
     },
     "owner": "anshraj112",
-    "runtimeVersion": {
+    "runtimeVersion":
+    {
       "policy": "appVersion"
     },
     "updates": {
