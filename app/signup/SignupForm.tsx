@@ -108,7 +108,7 @@ export default function SignupStep1() {
              ////
             />
 
-            <TouchableOpacity style={styles.button} onPress={() => router.push('/pickcollege/pickcollege')}>
+            <TouchableOpacity style={styles.button} onPress={handleNext}>
               <Text style={styles.buttonText}>Next</Text>
             </TouchableOpacity>
 

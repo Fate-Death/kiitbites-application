@@ -17,12 +17,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import axios from "axios";
-import * as SecureStore from "expo-secure-store";
 import Toast from 'react-native-toast-message';
-import { CustomToast } from '../CustomToast';
 import { config } from "../../config";
-
-
+import { saveItem, getItem } from "../../utils/storage"; // ✅ updated path
 
 export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
@@ -32,12 +29,10 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-
-
   useEffect(() => {
     const checkLogin = async () => {
       try {
-        const token = await SecureStore.getItemAsync("user-jwt");
+        const token = await getItem("user-jwt");
         if (token) {
           router.replace("/profile/ProfilePage");
         }
@@ -47,82 +42,110 @@ export default function LoginScreen() {
     };
     checkLogin();
   }, []);
-  
+
   const handleSubmit = async () => {
     setError("");
 
     if (!identifier || !password) {
-     
-        Toast.show({
-              type: 'error',
-              text1: 'Validation Error',
-              text2: 'Email/username and password are required.',
-              position: 'bottom',
-            });
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Email/username and password are required.',
+        position: 'bottom',
+      });
       return;
     }
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`${config.backendUrl}/api/auth/login`, {
-        identifier,
-        password,
-      });
+      const response = await axios.post(
+        `${config.backendUrl}/api/user/auth/login`,
+        { identifier, password },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          timeout: 10000,
+        }
+      );
 
       const { token, message } = response.data;
 
       if (!token) {
-        throw new Error("Invalid response from server.");
+        throw new Error(message || 'No token received from server');
       }
 
       try {
-        console.log("Attempting to store token:", token);
-        await SecureStore.setItemAsync("user-jwt", token);
-        console.log("Token stored successfully");
-        router.replace("/profile/ProfilePage");
+        await saveItem('user-jwt', token);
+        Toast.show({
+          type: 'success',
+          text1: 'Login Successful',
+          text2: 'Redirecting to your profile...',
+          position: 'bottom',
+        });
+
+        setTimeout(() => {
+          router.replace('/profile/ProfilePage');
+        }, 1500);
       } catch (storageError) {
-        console.error("Detailed storage error:", storageError);
-        if (storageError instanceof Error) {
-          throw new Error(`Failed to store login credentials: ${storageError.message}`);
-        }
-        throw new Error("Failed to store login credentials");
+        console.error('Token storage failed:', storageError);
+        throw new Error('Failed to store authentication token');
       }
+
     } catch (error: any) {
-      console.error("Login error details:", {
-        error: error,
-        responseData: error.response?.data,
-        statusCode: error.response?.status,
-        message: error.message
+      console.error('Login error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
       });
 
-      // Handle backend-sent errors like OTP required or rate limit
-      const backendMessage = error.response?.data?.message || 
-        (error instanceof Error ? error.message : "Login failed");
-      const redirectTo = error.response?.data?.redirectTo;
+      let errorMessage = 'Login failed. Please try again.';
 
-      if (redirectTo) {
-        router.push(redirectTo); // redirect to OTP verification
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status === 401) {
+          errorMessage = data?.message || 'Invalid email/phone or password';
+        } else if (status === 400) {
+          errorMessage = data?.message || 'Invalid request';
+        } else if (status >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+
+        if (data?.redirectTo) {
+          router.push(data.redirectTo);
+          return;
+        }
+      } else if (error.request) {
+        errorMessage = 'Cannot connect to server. Please check your connection.';
       } else {
-        setError(backendMessage);
+        errorMessage = `Login error: ${error.message}`;
       }
+
+      setError(errorMessage);
+      Toast.show({
+        type: 'error',
+        text1: 'Login Failed',
+        text2: errorMessage,
+        position: 'bottom',
+      });
+
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <SafeAreaView style={styles.container}>
-          <StatusBar style="light" />
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.keyboardAvoidView}
-          >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={true}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar style="light" />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardAvoidView}
+        >
           <View style={styles.headerContainer}>
             <Image
-              source={{
-                uri: "https://res.cloudinary.com/dt45pu5mx/image/upload/v1743530399/top_left_icon_jbwtev.png",
-              }}
+              source={{ uri: "https://res.cloudinary.com/dt45pu5mx/image/upload/v1743530399/top_left_icon_jbwtev.png" }}
               style={styles.topleftimage}
             />
             <Text style={styles.headerTitle}>Login</Text>
@@ -171,9 +194,7 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.rememberForgotContainer}>
-              <TouchableOpacity
-                onPress={() => router.push("/forgotpassword/ForgotPassword")}
-              >
+              <TouchableOpacity onPress={() => router.push("/forgotpassword/ForgotPassword")}>
                 <Text style={styles.forgotText}>Forgot Password</Text>
               </TouchableOpacity>
             </View>
@@ -192,16 +213,14 @@ export default function LoginScreen() {
 
             <View style={styles.signupContainer}>
               <Text style={styles.noAccountText}>Don't have an account? </Text>
-              <TouchableOpacity
-                onPress={() => router.push("/signup/SignupForm")}
-              >
+              <TouchableOpacity onPress={() => router.push("/signup/SignupForm")}>
                 <Text style={styles.signupText}>SIGN UP</Text>
               </TouchableOpacity>
             </View>
           </View>
-          </KeyboardAvoidingView>
-        </SafeAreaView>
-      </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -210,9 +229,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1a1a2e',
   },
-  keyboardAvoidView: { 
-    flex: 1, 
-    justifyContent: "flex-start" 
+  keyboardAvoidView: {
+    flex: 1,
+    justifyContent: "flex-start"
   },
   headerContainer: {
     alignItems: "center",
@@ -224,9 +243,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 6,
   },
-  headerSubtitle: { 
-    fontSize: 16, 
-    color: "#B0B0B0", 
+  headerSubtitle: {
+    fontSize: 16,
+    color: "#B0B0B0",
     textAlign: "center",
     marginBottom: 40,
   },
@@ -239,8 +258,8 @@ const styles = StyleSheet.create({
     padding: 22,
     paddingTop: 40,
   },
-  inputGroup: { 
-    marginBottom: 20 
+  inputGroup: {
+    marginBottom: 20
   },
   inputLabel: {
     fontSize: 13,
@@ -253,25 +272,20 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 0,
     height: 50,
     borderWidth: 1,
     borderColor: 'transparent',
   },
-  input: { 
-    flex: 1, 
-    height: "100%", 
-    fontSize: 16, 
+  input: {
+    flex: 1,
+    height: "100%",
+    fontSize: 16,
     color: "#111",
-    paddingVertical: 0,
-    backgroundColor: 'transparent',
-    borderWidth: 0,
     padding: 14,
-    margin: 0,
     borderRadius: 10,
   },
-  eyeIcon: { 
-    padding: 5 
+  eyeIcon: {
+    padding: 5
   },
   rememberForgotContainer: {
     flexDirection: "row",
@@ -279,10 +293,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 20,
   },
-  forgotText: { 
-    fontSize: 14, 
-    color: "#00C2B2", 
-    fontWeight: "600" 
+  forgotText: {
+    fontSize: 14,
+    color: "#00C2B2",
+    fontWeight: "600"
   },
   loginButton: {
     backgroundColor: "#009688",
@@ -291,9 +305,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
   },
-  loginButtonText: { 
-    color: "white", 
-    fontSize: 16, 
+  loginButtonText: {
+    color: "white",
+    fontSize: 16,
     fontWeight: "bold",
     textAlign: 'center',
   },
@@ -302,21 +316,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 16,
   },
-  noAccountText: { 
-    fontSize: 14, 
-    color: "#333" 
+  noAccountText: {
+    fontSize: 14,
+    color: "#333"
   },
-  signupText: { 
-    fontSize: 14, 
-    color: "#00C2B2", 
-    fontWeight: "bold" 
+  signupText: {
+    fontSize: 14,
+    color: "#00C2B2",
+    fontWeight: "bold"
   },
   topleftimage: {
     position: "absolute",
     top: 40,
     left: 20,
+    width: 40,
+    height: 40,
   },
 });
-
-
-
