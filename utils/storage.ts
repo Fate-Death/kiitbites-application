@@ -1,28 +1,38 @@
 // utils/storage.ts
 
-import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
+// app/utils/storage.ts
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const saveItem = async (key: string, value: string) => {
-  if (Platform.OS === 'web') {
-    localStorage.setItem(key, value);
-  } else {
-    await SecureStore.setItemAsync(key, value);
+const TOKEN_KEY = 'token';
+
+export const saveToken = async (token: string) => {
+  try {
+    console.log('Saving token to storage...');
+    await AsyncStorage.setItem(TOKEN_KEY, token);
+    console.log('Token saved successfully');
+    return true;
+  } catch (e) {
+    console.error('Error saving token:', e);
+    return false;
   }
 };
 
-export const getItem = async (key: string): Promise<string | null> => {
-  if (Platform.OS === 'web') {
-    return localStorage.getItem(key);
-  } else {
-    return await SecureStore.getItemAsync(key);
+export const getToken = async (): Promise<string | null> => {
+  try {
+    console.log('Getting token from storage...');
+    const token = await AsyncStorage.getItem(TOKEN_KEY);
+    console.log('Retrieved token:', token ? 'Token exists' : 'No token found');
+    return token;
+  } catch (e) {
+    console.error('Error getting token:', e);
+    return null;
   }
 };
 
-export const deleteItem = async (key: string) => {
-  if (Platform.OS === 'web') {
-    localStorage.removeItem(key);
-  } else {
-    await SecureStore.deleteItemAsync(key);
+export const removeToken = async () => {
+  try {
+    await AsyncStorage.removeItem(TOKEN_KEY);
+  } catch (e) {
+    console.error('Error removing token:', e);
   }
 };

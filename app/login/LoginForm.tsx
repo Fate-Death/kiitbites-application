@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import {
+import React, { useEffect, useRef, useState } from "react"; import {
   StyleSheet,
   View,
   Text,
@@ -19,7 +18,7 @@ import { useRouter } from "expo-router";
 import axios from "axios";
 import Toast from 'react-native-toast-message';
 import { config } from "../../config";
-import { saveItem, getItem } from "../../utils/storage"; // ✅ updated path
+import { saveToken, getToken, removeToken } from "../../utils/storage";
 
 export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
@@ -28,25 +27,35 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const navigationInProgress = useRef(false);
 
   useEffect(() => {
     const checkLogin = async () => {
       try {
-        const token = await getItem("user-jwt");
+        console.log('Checking for existing token...');
+        const token = await getToken();
+        console.log('Token found:', !!token);
         if (token) {
+          console.log('Redirecting to profile...');
           router.replace("/profile/ProfilePage");
         }
       } catch (error) {
         console.error("Error checking login status:", error);
+        // Clear invalid token if any
+        await removeToken();
       }
     };
     checkLogin();
-  }, []);
+  }, [router]);
 
   const handleSubmit = async () => {
+    if (navigationInProgress.current) return;
+    
     setError("");
+    navigationInProgress.current = true;
 
     if (!identifier || !password) {
+      navigationInProgress.current = false;
       Toast.show({
         type: 'error',
         text1: 'Validation Error',
@@ -71,13 +80,20 @@ export default function LoginScreen() {
       );
 
       const { token, message } = response.data;
+      console.log('Login response received. Token present:', !!token);
 
       if (!token) {
+        console.error('No token in response:', message);
         throw new Error(message || 'No token received from server');
       }
 
       try {
-        await saveItem('user-jwt', token);
+        console.log('Saving token...');
+        await saveToken(token);
+        console.log('Token saved successfully');
+        
+        // Remove isMounted check to prevent navigation blocking
+        
         Toast.show({
           type: 'success',
           text1: 'Login Successful',
@@ -85,22 +101,35 @@ export default function LoginScreen() {
           position: 'bottom',
         });
 
-        setTimeout(() => {
-          router.replace('/profile/ProfilePage');
-        }, 1500);
+        // Clear any previous errors
+        setError('');
+        
+        // Navigate after a short delay
+        console.log('Initiating navigation to profile...');
+        // Navigate immediately after successful login
+        console.log('Executing navigation to profile');
+        router.replace('/profile/ProfilePage');
       } catch (storageError) {
         console.error('Token storage failed:', storageError);
         throw new Error('Failed to store authentication token');
       }
 
     } catch (error: any) {
+      // Clear any invalid token on error
+      await removeToken();
+      
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (error.code === 'ECONNABORTED') {
+        errorMessage = 'Request timed out. Please check your connection and try again.';
+      } else if (error.message === 'Failed to store authentication token') {
+        errorMessage = 'Failed to save login session. Please try again.';
+      }
       console.error('Login error:', {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
       });
-
-      let errorMessage = 'Login failed. Please try again.';
 
       if (error.response) {
         const { status, data } = error.response;
@@ -114,6 +143,7 @@ export default function LoginScreen() {
 
         if (data?.redirectTo) {
           router.push(data.redirectTo);
+          navigationInProgress.current = false;
           return;
         }
       } else if (error.request) {
@@ -131,6 +161,7 @@ export default function LoginScreen() {
       });
 
     } finally {
+      navigationInProgress.current = false;
       setIsLoading(false);
     }
   };
