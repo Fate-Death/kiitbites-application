@@ -1,3 +1,5 @@
+
+
 import { router } from "expo-router";
 import {
   View,
@@ -18,105 +20,138 @@ export default function AboutUs() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.contentWrapper}>
-          <Text style={styles.heading}>Terms & Conditions</Text>
+          <Text style={styles.heading}>Refund & Cancellation Policy</Text>
           <Text style={styles.description}>
-           Welcome to BitesBay. By accessing or using our platform, you agree to
-        comply with the following terms and conditions. We encourage all users
-        to read them thoroughly to ensure a smooth and fair experience for
-        everyone.
+            At BitesBay, we value transparency, accountability, and a smooth
+            ordering experience. This policy clearly defines our stance on refunds,
+            cancellations, and payment guidelines, ensuring fairness for users and
+            food vendors across campus food courts.
           </Text>
 
 
 
-          <HoverCard title="1. Account Registration & User Information">
+          <HoverCard title="Refund Policy">
             <Text style={styles.bullet}>
                <Text style={styles.bold}>• </Text>
-             Users are required to provide accurate, complete, and truthful
-            information during registration.          </Text>
+              All confirmed orders are <Text style={styles.bold}>non-refundable</Text>. Once an
+              order is placed and payment is successfully processed (where
+              applicable), no refund requests will be entertained.          </Text>
             <Text style={styles.bullet}>
                <Text style={styles.bold}>• </Text>
-              Once an account is created, users will not be able to change
-            personal details such as name, contact number, or identity
-            credentials. For corrections or support, please contact us via the
-            Contact Us page. </Text>
+              Users are encouraged to double-check their order details—items,
+              quantities, and food preferences—before making any payment.          </Text>
             <Text style={styles.bullet}>
                <Text style={styles.bold}>• </Text>
-             Misrepresentation of identity, including gender or personal details,
-            is strictly prohibited and may result in account action.
-                     </Text>
+              Visiting food court outlets to request or argue for refunds is
+              strictly against platform policy. Such conduct will be treated as a
+              violation and may result in account suspension or permanent
+              termination.          </Text>
 
           </HoverCard>
 
-           <HoverCard title="2. Ordering & Pickup Guidelines">
+           <HoverCard title="Cancellation Policy">
             <Text style={styles.bullet}>
                <Text style={styles.bold}>• </Text>
-            Users must collect their food orders promptly at the designated
-            pickup time to avoid service disruption.
+             Orders cannot be canceled once placed, regardless of the order type
+            or time.
             </Text>
             <Text style={styles.bullet}>
                <Text style={styles.bold}>• </Text>
-               Placing excessive orders without timely pickup is not allowed.
-            Repeated instances may lead to penalties, including suspension of
-            account privileges.
+             To ensure reliable order processing and reduce food waste,
+            cancellations are not supported.
             </Text>
             <Text style={styles.bullet}>
                <Text style={styles.bold}>• </Text>
-              Once confirmed, orders cannot be canceled or refunded under any
-            circumstances.        
-             </Text>
+             Users placing multiple or excessive orders without following through
+            on payment or pickup will face permanent suspension from the
+            platform.         </Text>
 
           </HoverCard>
 
 
-           <HoverCard title="3. Prohibited Conduct">
-           
+           <HoverCard title="Payment Policy">
+             <Text style={styles.cardText}>
+          To streamline the ordering process and support operational efficiency:
+                      </Text>
 
            
              
             <Text style={styles.bullet}>
                <Text style={styles.bold}>• </Text>
-           Creating fake accounts or registering on behalf of another person is
-            not allowed. Such actions will result in immediate termination of
-            the involved accounts.
+             If your order consists solely of pre-packed items (such as bottled
+            beverages, chips, or sealed snacks), you may opt for Pay Later and
+            complete payment at the time of pickup.
             </Text>
             <Text style={styles.bullet}>
                <Text style={styles.bold}>• </Text>
-           Any form of fraud, including using multiple accounts to exploit
-            system features or avoid limitations, will be dealt with strictly
-            and may incur severe penalties.        
+            If your order includes any prepared or made-to-order items (such as
+            meals, sandwiches, or custom dishes), advance payment is mandatory
+            at the time of ordering.         
             </Text>
+               <Text style={styles.bullet}>
              
+             This distinction ensures that freshly prepared food is made only
+          against confirmed and paid requests, preventing resource misuse and
+          vendor losses.        
+            </Text>
             
 
           </HoverCard>
 
 
-               <HoverCard title="4. Violations & Consequences">
-                <Text style={styles.bullet}>
-               <Text style={styles.bold}>• </Text>
-           Breach of any of these terms may lead to temporary suspension or
-            permanent banning of the user from BitesBay.      
-            </Text>
+            <HoverCard title="Platform Integrity">
+             <Text style={styles.cardText}>
+             BitesBay operates on mutual trust between users and food court
+          vendors. Any misuse of platform functionality—such as:
+                      </Text>
+                      
+           
              
-            <Text style={styles.cardText}>
+            <Text style={styles.bullet}>
                <Text style={styles.bold}>• </Text>
-              In case of any disputes, clarifications, or issues, users are
-            encouraged to reach out through the{" "}
+            Coercing vendors or staff,
+            </Text>
+            <Text style={styles.bullet}>
+               <Text style={styles.bold}>• </Text>
+          Falsifying refund claims,        
+            </Text>
+               <Text style={styles.bullet}>
+                 <Text style={styles.bold}>• </Text>
+             
+            Repeatedly exploiting &quot;Pay Later&quot; for unpaid pickups,     
+            </Text>
+             <Text style={styles.bullet}>
+               <Text style={styles.bold}>• </Text>
+             Abusing support or system loopholes—            
+             </Text>
+  <Text style={styles.cardText}>
+              ...will result in immediate investigation and appropriate penalties,
+          including account bans without prior warning.
+                      </Text>
+
+            
+
+          </HoverCard>
+
+          <HoverCard title="Need Assistance?">
+            <Text style={styles.cardText}>
+             If you have any concerns or require clarification regarding your
+          orders or payment obligations, feel free to contact us anytime via our{" "}
               <Text
                 style={styles.link}
                 onPress={() => router.push("/help/HelpPage")}
               >
                 Contact Us
-              </Text> page for resolution.
+              </Text> page.
             </Text>
           </HoverCard>
 
           <View style={styles.footerBox}>
             <Text style={styles.footer}>
-               By using BitesBay, you acknowledge and agree to all of the above
-          terms. We reserve the right to modify or update these terms at any
-          time without prior notice. Continued use of the platform constitutes
-          acceptance of the most recent terms.
+              Thank you for choosing BitesBay — empowering campuses with smarter
+          food experiences.
+          <br />
+          Your cooperation helps us serve you better, every day.
             </Text>
           </View>
         </View>
@@ -246,12 +281,4 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
 });
-           
-
-
-
-
-
-
-
 
