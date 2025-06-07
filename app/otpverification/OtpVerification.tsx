@@ -51,7 +51,7 @@ export default function OtpVerificationScreen() {
           params: { email }
         });
       } else {
-        router.replace("/profile/ProfileForm");
+        router.replace("/profile/ProfilePage");
       }
     } catch (error: any) {
       console.error("OTP Verification error:", error);

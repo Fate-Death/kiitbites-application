@@ -1,9 +1,35 @@
 // utils/storage.ts
-
-// app/utils/storage.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TOKEN_KEY = 'token';
+const EMAIL_KEY = 'user_email';
+
+export const saveEmail = async (email: string) => {
+  try {
+    await AsyncStorage.setItem(EMAIL_KEY, email);
+    return true;
+  } catch (e) {
+    console.error('Error saving email:', e);
+    return false;
+  }
+};
+
+export const getEmail = async (): Promise<string | null> => {
+  try {
+    return await AsyncStorage.getItem(EMAIL_KEY);
+  } catch (e) {
+    console.error('Error getting email:', e);
+    return null;
+  }
+};
+
+export const removeEmail = async () => {
+  try {
+    await AsyncStorage.removeItem(EMAIL_KEY);
+  } catch (e) {
+    console.error('Error removing email:', e);
+  }
+};
 
 export const saveToken = async (token: string) => {
   try {

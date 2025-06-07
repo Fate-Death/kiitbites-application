@@ -21,21 +21,36 @@ const BACKEND_URL = Constants.expoConfig?.extra?.backendUrl || 'http://192.168.1
 export default function GenderForm() {
   const { name, email, phone, type } = useLocalSearchParams();
   const [gender, setGender] = useState('');
-  const [showOptions, setShowOptions] = useState(false);
+  const [college, setCollege] = useState('');
+  const [showGenderOptions, setShowGenderOptions] = useState(false);
+  const [showCollegeOptions, setShowCollegeOptions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const genderOptions = ['Male', 'Female'];
+  const genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
+  const collegeOptions = [
+    'KIIT University',
+    'KIMS',
+    'KINS',
+    'KIMSER',
+    'KSAC',
+    'Other'
+  ];
 
-  const handleSelect = (value: string) => {
+  const handleSelectGender = (value: string) => {
     setGender(value);
-    setShowOptions(false);
+    setShowGenderOptions(false);
+  };
+
+  const handleSelectCollege = (value: string) => {
+    setCollege(value);
+    setShowCollegeOptions(false);
   };
 
   const handleSubmit = async () => {
-    if (!gender) {
+    if (!gender || !college) {
       Toast.show({
         type: 'error',
         text1: 'Validation Error',
-        text2: 'Please choose your gender.',
+        text2: !gender ? 'Please choose your gender.' : 'Please select your college.',
         position: 'bottom',
       });
       return;
@@ -54,6 +69,7 @@ export default function GenderForm() {
           phone,
           password: (global as any).tempPassword,
           gender,
+          college,
           type
         }),
       });
@@ -112,13 +128,13 @@ export default function GenderForm() {
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <Text style={styles.title}>Gender</Text>
+        <Text style={styles.title}>Profile Details</Text>
 
         <View style={styles.cardWrapper}>
           <Text style={styles.label}>GENDER</Text>
           <TouchableOpacity
             style={styles.dropdown}
-            onPress={() => setShowOptions(true)}
+            onPress={() => setShowGenderOptions(true)}
           >
             <Text style={{ color: gender ? '#000' : '#8a8a8a', fontSize: 16 }}>
               {gender || 'Select Gender'}
@@ -131,15 +147,49 @@ export default function GenderForm() {
             />
           </TouchableOpacity>
 
-          <Modal transparent visible={showOptions} animationType="fade">
-            <TouchableWithoutFeedback onPress={() => setShowOptions(false)}>
+          <Modal transparent visible={showGenderOptions} animationType="fade">
+            <TouchableWithoutFeedback onPress={() => setShowGenderOptions(false)}>
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
                   {genderOptions.map((option) => (
                     <TouchableOpacity
                       key={option}
                       style={styles.option}
-                      onPress={() => handleSelect(option)}
+                      onPress={() => handleSelectGender(option)}
+                    >
+                      <Text style={styles.optionText}>{option}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
+
+          <Text style={[styles.label, { marginTop: 20 }]}>COLLEGE</Text>
+          <TouchableOpacity
+            style={styles.dropdown}
+            onPress={() => setShowCollegeOptions(true)}
+          >
+            <Text style={{ color: college ? '#000' : '#8a8a8a', fontSize: 16 }}>
+              {college || 'Select College'}
+            </Text>
+            <MaterialCommunityIcons
+              name="chevron-down"
+              size={24}
+              color="#666"
+              style={{ position: 'absolute', right: 10 }}
+            />
+          </TouchableOpacity>
+
+          <Modal transparent visible={showCollegeOptions} animationType="fade">
+            <TouchableWithoutFeedback onPress={() => setShowCollegeOptions(false)}>
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                  {collegeOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      style={styles.option}
+                      onPress={() => handleSelectCollege(option)}
                     >
                       <Text style={styles.optionText}>{option}</Text>
                     </TouchableOpacity>

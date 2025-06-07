@@ -18,7 +18,7 @@ import { useRouter } from "expo-router";
 import axios from "axios";
 import Toast from 'react-native-toast-message';
 import { config } from "../../config";
-import { saveToken, getToken, removeToken } from "../../utils/storage";
+import { saveToken, getToken, removeToken, saveEmail } from "../../utils/storage";
 
 export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
@@ -28,6 +28,11 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
   const router = useRouter();
   const navigationInProgress = useRef(false);
+  
+  // Function to extract email from identifier (if it's an email) or use as is
+  const getEmailFromIdentifier = (identifier: string) => {
+    return identifier.includes('@') ? identifier : '';
+  };
 
   useEffect(() => {
     const checkLogin = async () => {
@@ -137,14 +142,41 @@ export default function LoginScreen() {
           errorMessage = data?.message || 'Invalid email/phone or password';
         } else if (status === 400) {
           errorMessage = data?.message || 'Invalid request';
+          
+          // Check if this is an unverified user error
+          if (data.message === 'User not verified. OTP sent to email.') {
+            let userEmail = '';
+            
+            // Try to extract email from redirectTo URL if it exists
+            if (data.redirectTo) {
+              const url = new URL(`http://dummy${data.redirectTo}`); // dummy domain since we just want to parse the query
+              userEmail = url.searchParams.get('email') || '';
+            }
+            
+            // If still no email, try to use the identifier if it's an email
+            if (!userEmail && identifier.includes('@')) {
+              userEmail = identifier;
+            }
+            
+            if (userEmail) {
+              // Save the email for OTP verification
+              await saveEmail(userEmail);
+              
+              // Navigate to OTP verification
+              console.log('Redirecting to OTP verification for email:', userEmail);
+              router.push({
+                pathname: "/otpverification/OtpVerification",
+                params: { email: userEmail, from: 'login' }
+              });
+              navigationInProgress.current = false;
+              return;
+            } else {
+              console.error('No email found for OTP verification');
+              errorMessage = 'Unable to verify your account. Please try again.';
+            }
+          }
         } else if (status >= 500) {
           errorMessage = 'Server error. Please try again later.';
-        }
-
-        if (data?.redirectTo) {
-          router.push(data.redirectTo);
-          navigationInProgress.current = false;
-          return;
         }
       } else if (error.request) {
         errorMessage = 'Cannot connect to server. Please check your connection.';
