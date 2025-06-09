@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -22,28 +22,49 @@ export default function GenderForm() {
   const { name, email, phone, type } = useLocalSearchParams();
   const [gender, setGender] = useState('');
   const [college, setCollege] = useState('');
+  const [selectedCollegeId, setSelectedCollegeId] = useState('');
   const [showGenderOptions, setShowGenderOptions] = useState(false);
   const [showCollegeOptions, setShowCollegeOptions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingColleges, setIsLoadingColleges] = useState(true);
+  const [colleges, setColleges] = useState<Array<{_id: string, fullName: string}>>([]);
   const genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
-  const collegeOptions = [
-    'KIIT University',
-    'KIMS',
-    'KINS',
-    'KIMSER',
-    'KSAC',
-    'Other'
-  ];
 
   const handleSelectGender = (value: string) => {
     setGender(value);
     setShowGenderOptions(false);
   };
 
-  const handleSelectCollege = (value: string) => {
-    setCollege(value);
+  const handleSelectCollege = (uniID: string, collegeName: string) => {
+    setCollege(collegeName);
+    setSelectedCollegeId(uniID);
     setShowCollegeOptions(false);
   };
+
+  // Fetch colleges from the backend
+  useEffect(() => {
+    const fetchColleges = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/user/auth/list`);
+        if (response.ok) {
+          const data = await response.json();
+          setColleges(data);
+        }
+      } catch (error) {
+        console.error('Error fetching colleges:', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Failed to load colleges. Please try again.',
+          position: 'bottom',
+        });
+      } finally {
+        setIsLoadingColleges(false);
+      }
+    };
+
+    fetchColleges();
+  }, []);
 
   const handleSubmit = async () => {
     if (!gender || !college) {
@@ -69,7 +90,7 @@ export default function GenderForm() {
           phone,
           password: (global as any).tempPassword,
           gender,
-          college,
+          uniID: selectedCollegeId,
           type
         }),
       });
@@ -168,10 +189,11 @@ export default function GenderForm() {
           <Text style={[styles.label, { marginTop: 20 }]}>COLLEGE</Text>
           <TouchableOpacity
             style={styles.dropdown}
-            onPress={() => setShowCollegeOptions(true)}
+            onPress={() => !isLoadingColleges && setShowCollegeOptions(true)}
+            disabled={isLoadingColleges}
           >
             <Text style={{ color: college ? '#000' : '#8a8a8a', fontSize: 16 }}>
-              {college || 'Select College'}
+              {isLoadingColleges ? 'Loading colleges...' : (college || 'Select College')}
             </Text>
             <MaterialCommunityIcons
               name="chevron-down"
@@ -181,19 +203,30 @@ export default function GenderForm() {
             />
           </TouchableOpacity>
 
-          <Modal transparent visible={showCollegeOptions} animationType="fade">
+          <Modal transparent visible={showCollegeOptions} animationType="fade" onRequestClose={() => setShowCollegeOptions(false)}>
             <TouchableWithoutFeedback onPress={() => setShowCollegeOptions(false)}>
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                  {collegeOptions.map((option) => (
-                    <TouchableOpacity
-                      key={option}
-                      style={styles.option}
-                      onPress={() => handleSelectCollege(option)}
-                    >
-                      <Text style={styles.optionText}>{option}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  <FlatList
+                    data={colleges}
+                    keyExtractor={(item) => item._id}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        style={styles.option}
+                        onPress={() => handleSelectCollege(item._id, item.fullName)}
+                      >
+                        <Text style={styles.optionText}>{item.fullName}</Text>
+                      </TouchableOpacity>
+                    )}
+                    contentContainerStyle={styles.optionsList}
+                    ListEmptyComponent={
+                      <View style={styles.noOptionsContainer}>
+                        <Text style={styles.noOptionsText}>
+                          {isLoadingColleges ? 'Loading colleges...' : 'No colleges available'}
+                        </Text>
+                      </View>
+                    }
+                  />
                 </View>
               </View>
             </TouchableWithoutFeedback>
@@ -233,7 +266,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1a1a2e',
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: 90,
   },
   title: {
     color: 'white',
@@ -263,8 +296,50 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#000',
     height: 50,
-    justifyContent: 'center',
     paddingHorizontal: 12,
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  dropdownButton: {
+    backgroundColor: '#EDEDED',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#000',
+    height: 50,
+    paddingHorizontal: 12,
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    width: '100%',
+  },
+  dropdownButtonText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  optionItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    width: '100%',
+  },
+  optionsList: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    maxHeight: 300,
+    width: '90%',
+    alignSelf: 'center',
+  },
+  noOptionsContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noOptionsText: {
+    color: '#666',
+    fontSize: 16,
   },
   buttonRow: {
     flexDirection: 'row',
