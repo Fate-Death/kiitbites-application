@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1a1a2e',
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: 90,
   },
   title: {
     color: 'white',

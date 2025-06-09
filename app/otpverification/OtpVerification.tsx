@@ -35,7 +35,7 @@ export default function OtpVerificationScreen() {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`${config.backendUrl}/api/auth/otpverification`, {
+      const response = await axios.post(`${config.backendUrl}/api/user/auth/otpverification`, {
         email,
         otp,
       });
@@ -51,7 +51,7 @@ export default function OtpVerificationScreen() {
           params: { email }
         });
       } else {
-        router.replace("/profile/ProfileForm");
+        router.replace("/profile/ProfilePage");
       }
     } catch (error: any) {
       console.error("OTP Verification error:", error);
