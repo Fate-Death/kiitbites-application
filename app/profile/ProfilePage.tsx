@@ -168,14 +168,17 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      <View style={styles.card}>
+        <View style={styles.card}>
         <TouchableOpacity style={styles.item}>
           <MaterialIcons name="shopping-cart" size={20} color="#5B96F0" />
           <Text style={styles.itemText}>Cart</Text>
           <Ionicons name="chevron-forward" size={20} color="#777" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.item}>
+        <TouchableOpacity
+          style={styles.item}
+          onPress={() => router.push('/fav/FavouritePage')}
+        >
           <FontAwesome5 name="heart" size={18} color="#D26AFF" />
           <Text style={styles.itemText}>Favourite</Text>
           <Ionicons name="chevron-forward" size={20} color="#777" />
@@ -189,20 +192,20 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.card}>
-        <TouchableOpacity style={styles.item} onPress={()=>router.push('/terms/TermsForm')}>
+        <TouchableOpacity style={styles.item} onPress={()=>router.push('/terms/TermsPage')}>
           <Entypo name="help" size={20} color="#FF6347" />
           <Text style={styles.itemText}>FAQs</Text>
           <Ionicons name="chevron-forward" size={20} color="#777" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.item} onPress={() => router.push('/about/AboutForm')}>
+        <TouchableOpacity style={styles.item} onPress={() => router.push('/about/AboutPage')}>
           <Feather name="info" size={20} color="#00CED1" />
           <Text style={styles.itemText}>About Us</Text>
           <Ionicons name="chevron-forward" size={20} color="#777" />
           
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.item} onPress={()=>router.push('/help/HelpForm')}>
+        <TouchableOpacity style={styles.item} onPress={()=>router.push('/help/HelpPage')}>
           <Ionicons name="mail-open-outline" size={20} color="#8A2BE2" />
           <Text style={styles.itemText}>Contact Us</Text>
           <Ionicons name="chevron-forward" size={20} color="#777" />
