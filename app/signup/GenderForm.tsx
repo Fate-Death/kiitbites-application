@@ -8,15 +8,15 @@ import {
   Platform,
   Modal,
   FlatList,
-  Pressable,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Toast from 'react-native-toast-message';
 import { CustomToast } from '../CustomToast';
-import Constants from 'expo-constants';
+import { config } from '../../config';
 
-const BACKEND_URL = Constants.expoConfig?.extra?.backendUrl || 'http://localhost:5001';
+const BACKEND_URL = config.backendUrl;
 
 export default function GenderForm() {
   const { name, email, phone, type } = useLocalSearchParams();
@@ -168,26 +168,22 @@ export default function GenderForm() {
             />
           </TouchableOpacity>
 
-          <Modal transparent visible={showGenderOptions} animationType="fade" onRequestClose={() => setShowGenderOptions(false)}>
-            <Pressable onPress={() => setShowGenderOptions(false)} style={{ flex: 1 }}>
+          <Modal transparent visible={showGenderOptions} animationType="fade">
+            <TouchableWithoutFeedback onPress={() => setShowGenderOptions(false)}>
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                  <FlatList
-                    data={genderOptions}
-                    keyExtractor={(item) => item}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity
-                        style={styles.option}
-                        onPress={() => handleSelectGender(item)}
-                      >
-                        <Text style={styles.optionText}>{item}</Text>
-                      </TouchableOpacity>
-                    )}
-                    contentContainerStyle={styles.optionsList}
-                  />
+                  {genderOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      style={styles.option}
+                      onPress={() => handleSelectGender(option)}
+                    >
+                      <Text style={styles.optionText}>{option}</Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
               </View>
-            </Pressable>
+            </TouchableWithoutFeedback>
           </Modal>
 
           <Text style={[styles.label, { marginTop: 20 }]}>COLLEGE</Text>
@@ -208,7 +204,7 @@ export default function GenderForm() {
           </TouchableOpacity>
 
           <Modal transparent visible={showCollegeOptions} animationType="fade" onRequestClose={() => setShowCollegeOptions(false)}>
-            <Pressable onPress={() => setShowCollegeOptions(false)} style={{ flex: 1 }}>
+            <TouchableWithoutFeedback onPress={() => setShowCollegeOptions(false)}>
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
                   <FlatList
@@ -233,7 +229,7 @@ export default function GenderForm() {
                   />
                 </View>
               </View>
-            </Pressable>
+            </TouchableWithoutFeedback>
           </Modal>
 
           <View style={styles.buttonRow}>

@@ -35,11 +35,8 @@
     "expo-system-ui": "~5.0.7",
     "expo-updates": "~0.28.13",
     "expo-web-browser": "~14.1.6",
-<<<<<<< HEAD
     "lucide-react-native": "^0.513.0",
-=======
     "nativewind": "2.0.x",
->>>>>>> bb124f6 (creating homepage)
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
@@ -52,12 +49,9 @@
     "react-native-toast-message": "^2.3.0",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "^0.20.0",
-<<<<<<< HEAD
     "react-native-webview": "13.13.5",
-    "react-toastify": "^11.0.5"
-=======
-    "react-native-webview": "13.13.5"
->>>>>>> bb124f6 (creating homepage)
+    "react-toastify": "^11.0.5",
+    "expo-network": "~7.1.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

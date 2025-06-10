@@ -42,8 +42,10 @@ export default function LoginScreen() {
         const token = await getToken();
         console.log('Token found:', !!token);
         // Only redirect to profile if we're on the login page
-        if (token && router.canGoBack()) {
-          router.back();
+         if (token) {
+
+          console.log('Redirecting to profile...');
+          router.replace("/profile/ProfilePage");
         }
       } catch (error) {
         console.error("Error checking login status:", error);
@@ -52,6 +54,9 @@ export default function LoginScreen() {
     };
     checkLogin();
   }, [router]);
+
+  // Using the backend URL from config
+  const backendUrl = config.backendUrl;
 
   const handleSubmit = async () => {
     if (navigationInProgress.current) return;
@@ -73,16 +78,20 @@ export default function LoginScreen() {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        `${config.backendUrl}/api/user/auth/login`,
+        `${backendUrl}/api/user/auth/login`,
         { identifier, password },
         {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
-          timeout: 10000,
+          timeout: 30000, // 30 seconds timeout
+          validateStatus: (status) => status < 500, // Don't throw for 4xx errors
         }
       );
+
+      console.log('Login response status:', response.status);
+      console.log('Response data:', response.data);
 
       const { token, message } = response.data;
       console.log('Login response received. Token present:', !!token);
@@ -97,13 +106,12 @@ export default function LoginScreen() {
         await saveToken(token);
         console.log('Token saved successfully');
         
-        // Remove isMounted check to prevent navigation blocking
-        
         Toast.show({
           type: 'success',
           text1: 'Login Successful',
-          text2: 'Redirecting to your profile...',
+          text2: 'Redirecting to home...',
           position: 'bottom',
+          visibilityTime: 2000,
         });
 
         // Clear any previous errors

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
 import {
   Ionicons,
@@ -36,11 +37,15 @@ export default function ProfileScreen() {
       }
 
       try {
+        console.log('Fetching user from:', `${BACKEND_URL}/api/user/auth/user`);
         const response = await fetch(`${BACKEND_URL}/api/user/auth/user`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
         });
+        console.log('Response status:', response.status);
 
         if (response.ok) {
           const data = await response.json();
@@ -61,55 +66,54 @@ export default function ProfileScreen() {
   }, []);
 
   const handleLogout = async () => {
-    // For web, use browser's confirm dialog for consistency
-    if (typeof window !== 'undefined' && !window.confirm('Are you sure you want to log out?')) {
-      return;
-    }
-
-    // For native, use Alert
-    if (typeof window === 'undefined') {
+    // Show confirmation dialog
+    if (Platform.OS === 'web') {
+      if (!window.confirm('Are you sure you want to log out?')) {
+        return;
+      }
+    } else {
       Alert.alert('Log Out', 'Are you sure you want to log out?', [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Log Out', onPress: performLogout },
       ]);
-    } else {
-      await performLogout();
+      return;
     }
+    
+    // If on web, continue with logout
+    await performLogout();
   };
 
   const performLogout = async () => {
     try {
-      const token = await getToken();
-      
-      // Clear token first to prevent any race conditions
+      // Clear token first
       await removeToken();
-
-      // Try to call the logout endpoint if we have a token
-      if (token) {
-        try {
+      
+      // Try to call the logout endpoint
+      try {
+        const token = await getToken();
+        if (token) {
           await fetch(`${BACKEND_URL}/api/user/auth/logout`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              'Authorization': `Bearer ${token}`
             }
           });
-        } catch (error) {
-          console.warn('Logout API call failed, but proceeding with client-side logout', error);
         }
+      } catch (error) {
+        console.warn('Logout API call failed, but continuing with client-side logout', error);
       }
-
-      // Force a full page reload on web to clear all state
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login/LoginForm';
+      
+      // Navigate to login screen
+      if (Platform.OS === 'web') {
+        window.location.href = '/';
       } else {
         router.replace('/login/LoginForm');
       }
     } catch (error) {
       console.error('Logout error:', error);
-      // Final fallback - force redirect even if something went wrong
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login/LoginForm';
+      // Fallback navigation
+      if (Platform.OS === 'web') {
+        window.location.href = '/';
       } else {
         router.replace('/login/LoginForm');
       }
