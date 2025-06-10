@@ -8,7 +8,7 @@ import {
   Platform,
   Modal,
   FlatList,
-  TouchableWithoutFeedback,
+  Pressable,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -168,22 +168,26 @@ export default function GenderForm() {
             />
           </TouchableOpacity>
 
-          <Modal transparent visible={showGenderOptions} animationType="fade">
-            <TouchableWithoutFeedback onPress={() => setShowGenderOptions(false)}>
+          <Modal transparent visible={showGenderOptions} animationType="fade" onRequestClose={() => setShowGenderOptions(false)}>
+            <Pressable onPress={() => setShowGenderOptions(false)} style={{ flex: 1 }}>
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                  {genderOptions.map((option) => (
-                    <TouchableOpacity
-                      key={option}
-                      style={styles.option}
-                      onPress={() => handleSelectGender(option)}
-                    >
-                      <Text style={styles.optionText}>{option}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  <FlatList
+                    data={genderOptions}
+                    keyExtractor={(item) => item}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        style={styles.option}
+                        onPress={() => handleSelectGender(item)}
+                      >
+                        <Text style={styles.optionText}>{item}</Text>
+                      </TouchableOpacity>
+                    )}
+                    contentContainerStyle={styles.optionsList}
+                  />
                 </View>
               </View>
-            </TouchableWithoutFeedback>
+            </Pressable>
           </Modal>
 
           <Text style={[styles.label, { marginTop: 20 }]}>COLLEGE</Text>
@@ -204,7 +208,7 @@ export default function GenderForm() {
           </TouchableOpacity>
 
           <Modal transparent visible={showCollegeOptions} animationType="fade" onRequestClose={() => setShowCollegeOptions(false)}>
-            <TouchableWithoutFeedback onPress={() => setShowCollegeOptions(false)}>
+            <Pressable onPress={() => setShowCollegeOptions(false)} style={{ flex: 1 }}>
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
                   <FlatList
@@ -229,7 +233,7 @@ export default function GenderForm() {
                   />
                 </View>
               </View>
-            </TouchableWithoutFeedback>
+            </Pressable>
           </Modal>
 
           <View style={styles.buttonRow}>

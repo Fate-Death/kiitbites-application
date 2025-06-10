@@ -15,6 +15,8 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import 'react-toastify/dist/ReactToastify.css';
+import { Ionicons } from "@expo/vector-icons";
+import { getToken, removeToken } from "../../utils/storage";
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || "http://localhost:5001";
 
@@ -89,18 +91,11 @@ const FavouriteFoodPageContent: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [currentVendorId, setCurrentVendorId] = useState<string | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Centralized login redirect
-  // const redirectToLogin = () => {
-  //   setCheckingAuth(false);
-  //   router.replace("/login/LoginForm");
-  // };
-
-  // Centralized token fetch
   const getAuthToken = async () => {
     try {
-      const token = await AsyncStorage.getItem("authToken");
-      return token;
+      return await getToken();
     } catch (error) {
       console.error("Error getting token from storage:", error);
       return null;
@@ -120,17 +115,25 @@ const FavouriteFoodPageContent: React.FC = () => {
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
+        setCheckingAuth(true);
         const token = await getAuthToken();
-        // if (!token) {
-        //   redirectToLogin();
-        //   return;
-        // }
+        if (!token) {
+          setIsAuthenticated(false);
+          router.push("/login/LoginForm");
+          return;
+        }
         const response = await axios.get(`${BACKEND_URL}/api/user/auth/user`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);
-      // } catch (error) {
-        // redirectToLogin();
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+        if (axios.isAxiosError(error) && error.response?.status === 403) {
+          await removeToken();
+          setIsAuthenticated(false);
+          router.push("/login/LoginForm");
+        }
       } finally {
         setCheckingAuth(false);
       }
@@ -138,25 +141,25 @@ const FavouriteFoodPageContent: React.FC = () => {
     fetchUserDetails();
   }, []);
 
-  // Fetch college list
+  // Fetch colleges
   useEffect(() => {
     const fetchColleges = async () => {
+      if (!isAuthenticated) return;
       try {
         const config = await getAuthConfig();
         const response = await axios.get(`${BACKEND_URL}/api/user/auth/list`, config);
         setColleges(response.data);
-      }
-      finally{
-        console.log("Colleges fetched successfully");
+      } catch (error) {
+        console.error("Error fetching colleges:", error);
       }
     };
     fetchColleges();
-  }, []);
+  }, [isAuthenticated]);
 
   // Fetch favorites
   useEffect(() => {
     const fetchFavorites = async () => {
-      if (!user?._id) return;
+      if (!isAuthenticated || !user?._id) return;
       try {
         setLoading(true);
         const config = await getAuthConfig();
@@ -165,16 +168,19 @@ const FavouriteFoodPageContent: React.FC = () => {
           : `${BACKEND_URL}/fav/${user._id}`;
         const response = await axios.get(url, config);
         setFavorites(response.data.favourites);
-      }  finally {
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+      } finally {
         setLoading(false);
       }
     };
     fetchFavorites();
-  }, [user?._id, selectedCollege]);
+  }, [user?._id, selectedCollege, isAuthenticated]);
 
   // Fetch vendors
   useEffect(() => {
     const fetchVendors = async () => {
+      if (!isAuthenticated || colleges.length === 0) return;
       try {
         const config = await getAuthConfig();
         if (selectedCollege) {
@@ -200,19 +206,16 @@ const FavouriteFoodPageContent: React.FC = () => {
           setVendors(vendorsMap);
         }
       } catch (error) {
-        // No redirect here, just log
         console.error("Error fetching vendors:", error);
       }
     };
-    if (colleges.length > 0) {
-      fetchVendors();
-    }
-  }, [selectedCollege, colleges]);
+    fetchVendors();
+  }, [selectedCollege, colleges, isAuthenticated]);
 
   // Fetch cart
   useEffect(() => {
     const fetchCartItems = async () => {
-      if (!user?._id) return;
+      if (!isAuthenticated || !user?._id) return;
       try {
         const config = await getAuthConfig();
         const response = await axios.get(`${BACKEND_URL}/cart/${user._id}`, config);
@@ -231,12 +234,11 @@ const FavouriteFoodPageContent: React.FC = () => {
           setCurrentVendorId(null);
         }
       } catch (error) {
-        // No redirect here, just log
         console.error("Error fetching cart items:", error);
       }
     };
     fetchCartItems();
-  }, [user?._id]);
+  }, [user?._id, isAuthenticated]);
 
   // Handle URL query parameter on initial load
   useEffect(() => {
@@ -592,25 +594,36 @@ const FavouriteFoodPageContent: React.FC = () => {
     return cartItems.length === 0;
   };
 
-  // --- UI ---
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Toast />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color="#4ea199" />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Your Favorites</Text>
+        {!isCartEmpty() && (
+          <TouchableOpacity onPress={clearCart} style={styles.clearCartButton}>
+            <Text style={styles.clearCartButtonText}>Clear Cart</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       {checkingAuth ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#000" />
         </View>
+      ) : !isAuthenticated ? (
+        <View style={styles.centered}>
+          <Text>Please log in to view your favorites</Text>
+        </View>
       ) : (
         <>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Your Favorites</Text>
-            {!isCartEmpty() && (
-              <TouchableOpacity onPress={clearCart} style={styles.clearCartButton}>
-                <Text style={styles.clearCartButtonText}>Clear Cart</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
           <View style={styles.dropdownContainer}>
             <TouchableOpacity
               style={styles.dropdownButton}
@@ -683,7 +696,7 @@ const FavouriteFoodPageContent: React.FC = () => {
 
                 const quantity = matchingCartItem?.quantity || 0;
                 const isSameVendor = !currentVendorId || currentVendorId === food.vendorId;
-                const isInCart = matchingCartItem !== undefined;
+                const isInCart = quantity > 0;
 
                 return (
                   <View key={`${food._id}-${food.vendorId}`} style={styles.foodCard}>
@@ -722,11 +735,17 @@ const FavouriteFoodPageContent: React.FC = () => {
                       </View>
                     ) : (
                       <TouchableOpacity
-                        style={styles.addToCartButton}
+                        style={[
+                          styles.addToCartButton,
+                          !isSameVendor && styles.disabledButton
+                        ]}
                         onPress={() => handleAddToCart(food)}
                         disabled={!isSameVendor}
                       >
-                        <Text style={styles.addToCartText}>
+                        <Text style={[
+                          styles.addToCartText,
+                          !isSameVendor && styles.disabledButtonText
+                        ]}>
                           {!isSameVendor ? "Different Vendor" : "Add to Cart"}
                         </Text>
                       </TouchableOpacity>
@@ -749,10 +768,21 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    alignItems: 'center',
-    marginBottom: 24,
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+  },
+  backText: {
+    marginLeft: 4,
+    fontSize: 16,
+    color: '#4ea199',
+    fontWeight: '600',
   },
   headerTitle: {
     fontSize: 28,
@@ -957,6 +987,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 48,
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
+  },
+  disabledButtonText: {
+    color: '#999',
   },
 });
 
