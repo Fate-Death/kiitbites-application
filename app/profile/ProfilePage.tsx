@@ -177,7 +177,9 @@ export default function ProfileScreen() {
 
         <TouchableOpacity
           style={styles.item}
-          onPress={() => router.push('/fav/FavouritePage')}
+          onPress={() => {
+            router.push('/fav/FavouritePage');
+          }}
         >
           <FontAwesome5 name="heart" size={18} color="#D26AFF" />
           <Text style={styles.itemText}>Favourite</Text>

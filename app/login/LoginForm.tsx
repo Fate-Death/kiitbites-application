@@ -11,6 +11,7 @@ import React, { useEffect, useRef, useState } from "react"; import {
   Keyboard,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
@@ -40,13 +41,12 @@ export default function LoginScreen() {
         console.log('Checking for existing token...');
         const token = await getToken();
         console.log('Token found:', !!token);
-        if (token) {
-          console.log('Redirecting to profile...');
-          router.replace("/profile/ProfilePage");
+        // Only redirect to profile if we're on the login page
+        if (token && router.canGoBack()) {
+          router.back();
         }
       } catch (error) {
         console.error("Error checking login status:", error);
-        // Clear invalid token if any
         await removeToken();
       }
     };
@@ -199,7 +199,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={true}>
+    <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <StatusBar style="light" />
         <KeyboardAvoidingView
@@ -283,7 +283,7 @@ export default function LoginScreen() {
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </TouchableWithoutFeedback>
+    </Pressable>
   );
 }
 
