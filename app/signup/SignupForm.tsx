@@ -4,11 +4,11 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   StyleSheet,
   KeyboardAvoidingView,
   Keyboard,
   Platform,
+  Pressable,
 } from 'react-native';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -65,7 +65,7 @@ export default function SignupStep1() {
 
   return (
     <View style={styles.outerContainer}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={styles.container}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -123,7 +123,7 @@ export default function SignupStep1() {
           </View>
         </View>
         </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+      </Pressable>
       
       <Toast
         config={{

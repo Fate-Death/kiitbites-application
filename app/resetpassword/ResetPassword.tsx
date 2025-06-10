@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
-  TouchableWithoutFeedback,
+  Pressable,
   ActivityIndicator,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
@@ -55,7 +55,7 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <StatusBar style="light" />
         <KeyboardAvoidingView
@@ -120,7 +120,7 @@ export default function ResetPasswordScreen() {
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </TouchableWithoutFeedback>
+    </Pressable>
   );
 }
 
