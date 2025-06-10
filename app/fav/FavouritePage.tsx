@@ -159,7 +159,7 @@ const FavouriteFoodPageContent: React.FC = () => {
   // Fetch favorites
   useEffect(() => {
     const fetchFavorites = async () => {
-      if (!isAuthenticated || !user?._id) return;
+      if (!isAuthenticated || !user?._id || colleges.length === 0) return;
       try {
         setLoading(true);
         const config = await getAuthConfig();
@@ -167,7 +167,16 @@ const FavouriteFoodPageContent: React.FC = () => {
           ? `${BACKEND_URL}/fav/${user._id}/${selectedCollege._id}`
           : `${BACKEND_URL}/fav/${user._id}`;
         const response = await axios.get(url, config);
-        setFavorites(response.data.favourites);
+        
+        // Only sort if we have colleges data and no specific college is selected
+        const sortedFavorites = selectedCollege 
+          ? response.data.favourites 
+          : response.data.favourites.sort((a: FoodItem, b: FoodItem) => {
+              const collegeA = colleges.find(c => c._id === a.uniId)?.fullName || '';
+              const collegeB = colleges.find(c => c._id === b.uniId)?.fullName || '';
+              return collegeA.localeCompare(collegeB);
+            });
+        setFavorites(sortedFavorites);
       } catch (error) {
         console.error("Error fetching favorites:", error);
       } finally {
@@ -175,7 +184,7 @@ const FavouriteFoodPageContent: React.FC = () => {
       }
     };
     fetchFavorites();
-  }, [user?._id, selectedCollege, isAuthenticated]);
+  }, [user?._id, selectedCollege, isAuthenticated, colleges]);
 
   // Fetch vendors
   useEffect(() => {
@@ -804,6 +813,7 @@ const styles = StyleSheet.create({
     maxWidth: 600,
     alignSelf: 'center',
     marginBottom: 24,
+    zIndex: 1000,
   },
   dropdownButton: {
     width: '100%',
@@ -820,6 +830,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    zIndex: 1000,
   },
   dropdownButtonText: {
     fontSize: 16,
@@ -835,7 +846,15 @@ const styles = StyleSheet.create({
     borderColor: '#d1d5db',
     borderWidth: 1,
     maxHeight: 250,
-    zIndex: 50,
+    zIndex: 1001,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   dropdownItem: {
     paddingVertical: 16,
@@ -845,6 +864,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: 'white',
   },
   dropdownItemText: {
     fontSize: 16,
@@ -868,6 +888,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    marginTop: 24,
   },
   foodCard: {
     backgroundColor: '#e5e7eb',
